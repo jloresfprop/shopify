@@ -37,6 +37,8 @@
 {%- endstyle -%}
 
 {%- assign col = collections[section.settings.collection] -%}
+{%- if col == blank -%}{%- assign col = collections['frontpage'] -%}{%- endif -%}
+{%- if col == blank -%}{%- assign col = collections.all -%}{%- endif -%}
 
 <section class="feat-col">
   <div class="feat-col__head">
