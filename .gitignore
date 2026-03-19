@@ -1,0 +1,4 @@
+.env
+scripts/.env
+node_modules/
+.claude/

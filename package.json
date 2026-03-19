@@ -1,0 +1,9 @@
+{
+  "name": "el-estante-sync",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-dropify.js",
+    "sync:dry": "node scripts/sync-dropify.js --dry-run"
+  }
+}
