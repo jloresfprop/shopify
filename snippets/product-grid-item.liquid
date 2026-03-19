@@ -1,8 +1,6 @@
 {%- comment -%} Usage: {% render 'product-grid-item', product: product %} {%- endcomment -%}
 
-{%- assign has_compare = product.compare_at_price > product.price -%}
 {%- assign discount_pct = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
-{%- assign is_new = product.created_at | date: '%s' | plus: 0 | plus: 2592000 | compare: 'now' | date: '%s' -%}
 
 <article class="product-card" itemscope itemtype="https://schema.org/Product">
   <a href="{{ product.url }}" class="product-card__link" aria-label="{{ product.title | escape }}">
@@ -29,7 +27,7 @@
         </div>
       {%- endif -%}
 
-      {%- if has_compare -%}
+      {%- if product.compare_at_price > product.price -%}
         <span class="product-card__badge product-card__badge--sale">-{{ discount_pct }}%</span>
       {%- elsif product.tags contains 'nuevo' or product.tags contains 'new' -%}
         <span class="product-card__badge product-card__badge--new">Nuevo</span>
@@ -57,7 +55,7 @@
     </h3>
 
     <div class="product-card__price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-      {%- if has_compare -%}
+      {%- if product.compare_at_price > product.price -%}
         <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
         <span class="product-card__price--current product-card__price--sale" itemprop="price" content="{{ product.price | divided_by: 100.0 }}">
           {{ product.price | money }}
