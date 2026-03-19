@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "hero": {
@@ -8,27 +17,28 @@
         "btn_label": "Ver productos",
         "btn_link": "/collections/all",
         "height": 600,
-        "overlay_opacity": 30,
-        "text_align": "center",
         "bg_color": "#1a1a1a",
-        "text_color": "#ffffff",
-        "btn_color": "#0066cc",
-        "btn_text_color": "#ffffff"
+        "text_color": "#ffffff"
       }
     },
     "featured": {
       "type": "featured-collection",
       "settings": {
-        "title": "Productos Destacados",
-        "products_to_show": 4,
+        "collection": "frontpage",
+        "eyebrow": "Lo más vendido",
+        "title": "Productos Disponibles",
+        "products_to_show": 8,
         "columns_desktop": 4,
         "columns_mobile": 2,
         "gap": 20,
         "padding_v": 60,
         "show_view_all": true,
-        "view_all_label": "Ver toda la colección"
+        "view_all_label": "Ver catálogo completo"
       }
     }
   },
-  "order": ["hero", "featured"]
+  "order": [
+    "hero",
+    "featured"
+  ]
 }
