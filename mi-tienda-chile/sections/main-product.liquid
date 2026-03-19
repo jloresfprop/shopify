@@ -1,0 +1,119 @@
+{%- style -%}
+  .product-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .product-page { grid-template-columns: 1fr; gap: 2rem; }
+  }
+  .product-page__gallery img { width: 100%; border-radius: 4px; }
+  .product-page__thumbs { display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap; }
+  .product-page__thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid transparent; }
+  .product-page__thumbs img:hover { border-color: #1a1a1a; }
+  .product-page__info h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 .75rem; }
+  .product-page__price { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; }
+  .product-page__price s { font-weight: 400; opacity: .5; font-size: 1rem; margin-left: .5rem; }
+  .product-page__variants { margin-bottom: 1.5rem; }
+  .product-page__variants label { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: .5rem; }
+  .product-page__variants select { width: 100%; padding: .6rem .75rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+  .product-page__btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .product-page__btn:hover { opacity: .8; }
+  .product-page__btn:disabled { opacity: .4; cursor: not-allowed; }
+  .product-page__desc { margin-top: 2rem; line-height: 1.7; opacity: .8; }
+{%- endstyle -%}
+
+<div class="product-page" itemscope itemtype="https://schema.org/Product">
+  <div class="product-page__gallery">
+    {%- if product.featured_image -%}
+      <img id="main-product-image"
+        src="{{ product.featured_image | image_url: width: 800 }}"
+        alt="{{ product.featured_image.alt | escape }}"
+        width="800"
+        loading="eager"
+        itemprop="image">
+    {%- endif -%}
+    {%- if product.images.size > 1 -%}
+      <div class="product-page__thumbs">
+        {%- for image in product.images -%}
+          <img src="{{ image | image_url: width: 150 }}"
+            alt="{{ image.alt | escape }}"
+            width="72" height="72"
+            loading="lazy"
+            onclick="document.getElementById('main-product-image').src='{{ image | image_url: width: 800 }}'">
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  <div class="product-page__info">
+    <h1 itemprop="name">{{ product.title }}</h1>
+
+    {%- form 'product', product, id: 'product-form' -%}
+      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+      <div class="product-page__price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+        <span itemprop="price" content="{{ product.selected_or_first_available_variant.price | divided_by: 100.0 }}">
+          {{ product.selected_or_first_available_variant.price | money }}
+        </span>
+        {%- if product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price -%}
+          <s>{{ product.selected_or_first_available_variant.compare_at_price | money }}</s>
+        {%- endif -%}
+      </div>
+
+      {%- unless product.has_only_default_variant -%}
+        {%- for option in product.options_with_values -%}
+          <div class="product-page__variants">
+            <label for="option-{{ forloop.index }}">{{ option.name }}</label>
+            <select id="option-{{ forloop.index }}" name="options[{{ option.name | escape }}]">
+              {%- for value in option.values -%}
+                <option value="{{ value | escape }}"
+                  {% if option.selected_value == value %}selected{% endif %}>
+                  {{ value }}
+                </option>
+              {%- endfor -%}
+            </select>
+          </div>
+        {%- endfor -%}
+      {%- endunless -%}
+
+      <button type="submit" class="product-page__btn"
+        {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
+        {%- if product.selected_or_first_available_variant.available -%}
+          Agregar al carrito
+        {%- else -%}
+          Agotado
+        {%- endif -%}
+      </button>
+    {%- endform -%}
+
+    {%- if product.description != blank -%}
+      <div class="product-page__desc" itemprop="description">
+        {{ product.description }}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Producto principal",
+  "settings": []
+}
+{% endschema %}

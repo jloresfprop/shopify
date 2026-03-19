@@ -1,0 +1,60 @@
+{%- style -%}
+  .collection-header {
+    padding: 3rem 1.5rem 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .collection-header__title { font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; }
+  .collection-header__desc { opacity: .7; max-width: 600px; }
+  .collection-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
+    gap: {{ section.settings.gap }}px;
+  }
+  @media (max-width: 768px) {
+    .collection-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .collection-pagination { text-align: center; padding: 2rem 1rem; }
+  .collection-pagination a {
+    display: inline-block;
+    padding: .5rem 1.25rem;
+    border: 1px solid currentColor;
+    text-decoration: none;
+    margin: 0 .25rem;
+  }
+{%- endstyle -%}
+
+<div class="collection-header">
+  <h1 class="collection-header__title">{{ collection.title }}</h1>
+  {%- if collection.description != blank -%}
+    <div class="collection-header__desc">{{ collection.description }}</div>
+  {%- endif -%}
+</div>
+
+<div class="collection-grid">
+  {%- for product in collection.products -%}
+    {% render 'product-grid-item', product: product %}
+  {%- else -%}
+    <p style="grid-column:1/-1;text-align:center;padding:3rem;color:#999;">Esta colección no tiene productos.</p>
+  {%- endfor -%}
+</div>
+
+{%- if paginate.pages > 1 -%}
+  <div class="collection-pagination">
+    {{ paginate | default_pagination }}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Colección principal",
+  "settings": [
+    { "type": "range", "id": "columns_desktop", "label": "Columnas (desktop)", "min": 2, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "gap", "label": "Espacio (px)", "min": 8, "max": 48, "step": 4, "default": 20 },
+    { "type": "range", "id": "products_per_page", "label": "Productos por página", "min": 8, "max": 48, "step": 4, "default": 16 }
+  ]
+}
+{% endschema %}

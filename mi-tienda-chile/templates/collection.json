@@ -2,7 +2,11 @@
   "sections": {
     "main": {
       "type": "main-collection",
-      "settings": {}
+      "settings": {
+        "columns_desktop": 4,
+        "gap": 20,
+        "products_per_page": 16
+      }
     }
   },
   "order": ["main"]
