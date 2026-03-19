@@ -1,65 +1,292 @@
 {%- style -%}
-  .collection-header {
-    padding: 3rem 1.5rem 1.5rem;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  .collection-header__title { font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; }
-  .collection-header__desc { opacity: .7; max-width: 600px; }
-  .collection-grid {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
-    gap: {{ section.settings.gap }}px;
-  }
-  @media (max-width: 768px) {
-    .collection-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  .collection-pagination { text-align: center; padding: 2rem 1rem; }
-  .collection-pagination a {
-    display: inline-block;
-    padding: .5rem 1.25rem;
-    border: 1px solid currentColor;
-    text-decoration: none;
-    margin: 0 .25rem;
-  }
+.col-page { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.col-header { margin-bottom: 2rem; }
+.col-header__title { font-size: clamp(1.5rem,3vw,2.25rem); font-weight: 800; letter-spacing:-.03em; }
+.col-header__meta { font-size:.85rem; color:#888; margin-top:.3rem; }
+
+.col-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #f8f8f8;
+  border-radius: .75rem;
+  margin-bottom: 1.75rem;
+}
+.col-toolbar__label { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#888; white-space:nowrap; }
+.col-toolbar__sep { width:1px; height:24px; background:#ddd; }
+.col-filter-group { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; }
+.col-filter-btn {
+  padding:.35rem .85rem;
+  border:1.5px solid #ddd;
+  background:#fff;
+  border-radius:2rem;
+  font-size:.8rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.col-filter-btn:hover { border-color:#1a1a1a; }
+.col-filter-btn.active { background:#1a1a1a; color:#fff; border-color:#1a1a1a; }
+.col-sort {
+  padding:.35rem .85rem;
+  border:1.5px solid #ddd;
+  background:#fff;
+  border-radius:.5rem;
+  font-size:.8rem;
+  font-weight:600;
+  cursor:pointer;
+  margin-left:auto;
+}
+.col-results { font-size:.82rem; color:#888; white-space:nowrap; align-self:center; }
+
+.col-grid {
+  display:grid;
+  grid-template-columns: repeat({{ section.settings.columns_desktop }},1fr);
+  gap: 1.25rem;
+}
+@media(max-width:900px){ .col-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:480px){ .col-grid{ grid-template-columns:1fr; } }
+
+.p-card {
+  border:1.5px solid #e8e8e8;
+  border-radius:.875rem;
+  overflow:hidden;
+  background:#fff;
+  transition:transform .2s, box-shadow .2s;
+  display:flex;
+  flex-direction:column;
+}
+.p-card:hover { transform:translateY(-3px); box-shadow:0 8px 30px rgba(0,0,0,.09); }
+.p-card--out { opacity:.65; }
+.p-card--out:hover { transform:none; box-shadow:none; }
+
+.p-card__img {
+  position:relative;
+  aspect-ratio:1;
+  overflow:hidden;
+  background:#f5f5f5;
+}
+.p-card__img img { width:100%; height:100%; object-fit:cover; transition:transform .35s; }
+.p-card:hover .p-card__img img { transform:scale(1.04); }
+.p-card__badges { position:absolute; top:.6rem; left:.6rem; display:flex; flex-direction:column; gap:.3rem; }
+.badge { padding:.2rem .6rem; border-radius:2rem; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+.badge--out { background:#1a1a1a; color:#fff; }
+.badge--sale { background:#ff3b30; color:#fff; }
+
+.p-card__body { padding:1rem; flex:1; display:flex; flex-direction:column; gap:.3rem; }
+.p-card__vendor { font-size:.72rem; color:#aaa; text-transform:uppercase; letter-spacing:.06em; }
+.p-card__title { font-size:.9rem; font-weight:700; line-height:1.35; color:#1a1a1a; text-decoration:none; }
+.p-card__price { display:flex; align-items:baseline; gap:.4rem; margin-top:auto; padding-top:.5rem; }
+.p-card__price-now { font-size:1rem; font-weight:800; }
+.p-card__price-was { font-size:.8rem; text-decoration:line-through; color:#ccc; }
+.p-card__price-off { font-size:.75rem; color:#ff3b30; font-weight:700; }
+
+.p-card__footer { padding:0 1rem 1rem; }
+.p-card__btn {
+  display:block; width:100%; padding:.65rem;
+  text-align:center; border-radius:.55rem;
+  font-size:.85rem; font-weight:700;
+  text-decoration:none; border:none; cursor:pointer; transition:all .2s;
+}
+.p-card__btn--buy { background:#1a1a1a; color:#fff; }
+.p-card__btn--buy:hover { background:#333; }
+.p-card__btn--out { background:#f0f0f0; color:#bbb; cursor:not-allowed; }
+
+.col-empty { grid-column:1/-1; text-align:center; padding:4rem 2rem; color:#aaa; }
+.col-pagination { text-align:center; margin-top:2.5rem; display:flex; justify-content:center; gap:.5rem; }
+.col-pagination a, .col-pagination span {
+  padding:.45rem 1rem; border:1.5px solid #ddd; border-radius:.5rem;
+  font-size:.85rem; font-weight:600; text-decoration:none; color:#1a1a1a;
+}
+.col-pagination .current { background:#1a1a1a; color:#fff; border-color:#1a1a1a; }
 {%- endstyle -%}
 
-<div class="collection-header">
-  <h1 class="collection-header__title">{{ collection.title }}</h1>
-  {%- if collection.description != blank -%}
-    <div class="collection-header__desc">{{ collection.description }}</div>
-  {%- endif -%}
-</div>
+{%- assign show_all = section.settings.show_all -%}
 
-<div class="collection-grid">
-  {%- assign available_products = 0 -%}
-  {%- for product in collection.products -%}
-    {%- if product.tags contains 'em-stock' -%}
-      {%- assign available_products = available_products | plus: 1 -%}
-      {% render 'product-grid-item', product: product %}
-    {%- endif -%}
-  {%- endfor -%}
-  {%- if available_products == 0 -%}
-    <p style="grid-column:1/-1;text-align:center;padding:3rem;color:#999;">No hay productos disponibles en este momento.</p>
-  {%- endif -%}
-</div>
-
-{%- if paginate.pages > 1 -%}
-  <div class="collection-pagination">
-    {{ paginate | default_pagination }}
+<div class="col-page">
+  <div class="col-header">
+    <h1 class="col-header__title">{{ collection.title }}</h1>
+    <p class="col-header__meta" id="col-count"></p>
   </div>
-{%- endif -%}
+
+  <div class="col-toolbar">
+    <span class="col-toolbar__label">Stock</span>
+    <div class="col-filter-group">
+      <button class="col-filter-btn active" data-stock="all">Todos</button>
+      <button class="col-filter-btn" data-stock="in">Disponibles</button>
+      {%- if show_all -%}
+        <button class="col-filter-btn" data-stock="out">Agotados</button>
+      {%- endif -%}
+    </div>
+
+    <div class="col-toolbar__sep"></div>
+    <span class="col-toolbar__label">Precio</span>
+    <div class="col-filter-group">
+      <button class="col-filter-btn active" data-price="all">Todos</button>
+      <button class="col-filter-btn" data-price="0-5000">Hasta $5.000</button>
+      <button class="col-filter-btn" data-price="5000-15000">$5.000–$15.000</button>
+      <button class="col-filter-btn" data-price="15000-999999">+$15.000</button>
+    </div>
+
+    <div class="col-toolbar__sep"></div>
+    <select class="col-sort" id="col-sort">
+      <option value="featured">Más vendidos</option>
+      <option value="price-asc">Precio: menor a mayor</option>
+      <option value="price-desc">Precio: mayor a menor</option>
+      <option value="name-asc">Nombre A–Z</option>
+      <option value="name-desc">Nombre Z–A</option>
+      <option value="newest">Más recientes</option>
+    </select>
+  </div>
+
+  <div class="col-grid" id="col-grid">
+    {%- paginate collection.products by section.settings.products_per_page -%}
+      {%- for product in collection.products -%}
+        {%- assign in_stock = false -%}
+        {%- if product.tags contains 'em-stock' -%}{%- assign in_stock = true -%}{%- endif -%}
+        {%- if show_all == false and in_stock == false -%}{%- continue -%}{%- endif -%}
+
+        {%- assign discount = 0 -%}
+        {%- if product.compare_at_price > product.price -%}
+          {%- assign discount = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+        {%- endif -%}
+
+        <div class="p-card {% unless in_stock %}p-card--out{% endunless %}"
+          data-stock="{{ in_stock }}"
+          data-price="{{ product.price }}"
+          data-title="{{ product.title | downcase }}"
+          data-date="{{ product.created_at | date: '%s' }}">
+
+          <a href="{{ product.url }}" class="p-card__img">
+            {%- if product.featured_image -%}
+              {{ product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', alt: product.title }}
+            {%- else -%}
+              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">📦</div>
+            {%- endif -%}
+            <div class="p-card__badges">
+              {%- unless in_stock -%}<span class="badge badge--out">Agotado</span>{%- endunless -%}
+              {%- if discount > 0 -%}<span class="badge badge--sale">-{{ discount }}%</span>{%- endif -%}
+            </div>
+          </a>
+
+          <div class="p-card__body">
+            {%- if product.vendor != blank -%}<p class="p-card__vendor">{{ product.vendor }}</p>{%- endif -%}
+            <a href="{{ product.url }}" class="p-card__title">{{ product.title }}</a>
+            <div class="p-card__price">
+              <span class="p-card__price-now">{{ product.price | money }}</span>
+              {%- if discount > 0 -%}
+                <span class="p-card__price-was">{{ product.compare_at_price | money }}</span>
+                <span class="p-card__price-off">-{{ discount }}%</span>
+              {%- endif -%}
+            </div>
+          </div>
+
+          <div class="p-card__footer">
+            {%- if in_stock -%}
+              <a href="{{ product.url }}" class="p-card__btn p-card__btn--buy">Ver producto</a>
+            {%- else -%}
+              <span class="p-card__btn p-card__btn--out">Sin stock</span>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+
+      <div class="col-empty" id="col-empty" style="display:none">
+        <p>No hay productos con esos filtros.</p>
+      </div>
+    {%- endpaginate -%}
+  </div>
+
+  {%- if paginate.pages > 1 -%}
+    <div class="col-pagination">
+      {{- paginate | default_pagination -}}
+    </div>
+  {%- endif -%}
+</div>
+
+<script>
+(function(){
+  const grid    = document.getElementById('col-grid');
+  const empty   = document.getElementById('col-empty');
+  const counter = document.getElementById('col-count');
+  const sortSel = document.getElementById('col-sort');
+  let stockFilter = 'all';
+  let priceFilter = 'all';
+
+  document.querySelectorAll('[data-stock]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-stock]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      stockFilter = btn.dataset.stock;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('[data-price]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-price]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      priceFilter = btn.dataset.price;
+      applyFilters();
+    });
+  });
+
+  sortSel.addEventListener('change', () => { applySort(); applyFilters(); });
+
+  function cards() { return [...grid.querySelectorAll('.p-card')]; }
+
+  function applySort() {
+    const val = sortSel.value;
+    const sorted = cards().sort((a, b) => {
+      if (val === 'price-asc')  return +a.dataset.price - +b.dataset.price;
+      if (val === 'price-desc') return +b.dataset.price - +a.dataset.price;
+      if (val === 'name-asc')  return a.dataset.title.localeCompare(b.dataset.title);
+      if (val === 'name-desc') return b.dataset.title.localeCompare(a.dataset.title);
+      if (val === 'newest')    return +b.dataset.date - +a.dataset.date;
+      return 0;
+    });
+    sorted.forEach(c => grid.appendChild(c));
+  }
+
+  function applyFilters() {
+    let visible = 0;
+    cards().forEach(card => {
+      const inStock = card.dataset.stock === 'true';
+      const price   = parseInt(card.dataset.price);
+      let show = true;
+
+      if (stockFilter === 'in')  show = show && inStock;
+      if (stockFilter === 'out') show = show && !inStock;
+
+      if (priceFilter !== 'all') {
+        const [min, max] = priceFilter.split('-').map(Number);
+        show = show && price >= min * 100 && price <= max * 100;
+      }
+
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    empty.style.display = visible === 0 ? 'block' : 'none';
+    counter.textContent = visible + ' producto' + (visible !== 1 ? 's' : '');
+  }
+
+  applyFilters();
+  counter.textContent = cards().length + ' productos';
+})();
+</script>
 
 {% schema %}
 {
-  "name": "Colección principal",
+  "name": "Catálogo principal",
   "settings": [
-    { "type": "range", "id": "columns_desktop", "label": "Columnas (desktop)", "min": 2, "max": 5, "step": 1, "default": 4 },
-    { "type": "range", "id": "gap", "label": "Espacio (px)", "min": 8, "max": 48, "step": 4, "default": 20 },
-    { "type": "range", "id": "products_per_page", "label": "Productos por página", "min": 8, "max": 48, "step": 4, "default": 16 }
+    { "type": "checkbox", "id": "show_all", "label": "Mostrar productos agotados", "default": false },
+    { "type": "range", "id": "columns_desktop", "label": "Columnas desktop", "min": 2, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "products_per_page", "label": "Productos por página", "min": 8, "max": 48, "step": 4, "default": 24 }
   ]
 }
 {% endschema %}
