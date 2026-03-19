@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#0d0d0d">
 
   {%- if page_title -%}
     <title>{{ page_title }} | {{ shop.name }}</title>
@@ -16,8 +16,6 @@
   {%- endif -%}
 
   <link rel="canonical" href="{{ canonical_url }}">
-
-  <!-- Open Graph -->
   <meta property="og:site_name" content="{{ shop.name }}">
   <meta property="og:url" content="{{ canonical_url }}">
   <meta property="og:title" content="{{ page_title | default: shop.name }}">
@@ -26,30 +24,52 @@
     <meta property="og:image" content="{{ page_image | image_url: width: 1200 }}">
   {%- endif -%}
 
-  <!-- Preconnect -->
   <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Fuentes optimizadas -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap">
+  </noscript>
 
   {{ content_for_header }}
-
   {{ 'base.css' | asset_url | stylesheet_tag }}
 </head>
 
 <body class="template-{{ template.name }}">
+
+  {%- if settings.announcement_text != blank -%}
+    <div class="announcement-bar">{{ settings.announcement_text }}</div>
+  {%- endif -%}
+
   {% section 'header' %}
+
+  <div class="trust-bar">
+    <span class="trust-bar__item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Despacho gratis sobre $50.000
+    </span>
+    <span class="trust-bar__item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Pago 100% seguro
+    </span>
+    <span class="trust-bar__item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Devoluciones en 30 días
+    </span>
+  </div>
 
   <main id="MainContent" role="main" tabindex="-1">
     {{ content_for_layout }}
   </main>
 
   {% section 'footer' %}
-
   {{ 'theme.js' | asset_url | script_tag }}
 </body>
 </html>

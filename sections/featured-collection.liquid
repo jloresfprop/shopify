@@ -1,45 +1,69 @@
 {%- style -%}
-  .featured-collection { padding: {{ section.settings.padding_v }}px 1rem; }
-  .featured-collection__header { text-align: center; margin-bottom: 2rem; }
-  .featured-collection__title { font-size: 2rem; font-weight: 700; margin: 0 0 .5rem; }
-  .featured-collection__grid {
+  .feat-col { padding: {{ section.settings.padding_v }}px 2rem; background: {{ section.settings.bg_color }}; }
+  .feat-col__head {
+    max-width: 1400px; margin: 0 auto 3rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .feat-col__eyebrow {
+    font-size: .72rem; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: #c9a84c;
+    display: flex; align-items: center; gap: .5rem; margin-bottom: .6rem;
+  }
+  .feat-col__eyebrow::before { content: ''; width: 24px; height: 2px; background: #c9a84c; display: block; }
+  .feat-col__title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    font-weight: 700; line-height: 1.15;
+    color: {{ section.settings.text_color }};
+  }
+  .feat-col__view-all {
+    font-size: .8rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase;
+    color: {{ section.settings.text_color }};
+    display: flex; align-items: center; gap: .4rem;
+    border-bottom: 2px solid #c9a84c; padding-bottom: 2px;
+    white-space: nowrap; transition: color .2s;
+  }
+  .feat-col__view-all:hover { color: #c9a84c; }
+  .feat-col__grid {
+    max-width: 1400px; margin: 0 auto;
     display: grid;
     grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
     gap: {{ section.settings.gap }}px;
-    max-width: 1400px;
-    margin: 0 auto;
   }
-  @media (max-width: 768px) {
-    .featured-collection__grid { grid-template-columns: repeat({{ section.settings.columns_mobile }}, 1fr); }
-  }
+  @media (max-width: 900px) { .feat-col__grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .feat-col__grid { grid-template-columns: repeat({{ section.settings.columns_mobile }}, 1fr); gap: 12px; } }
 {%- endstyle -%}
 
-{%- assign collection = collections[section.settings.collection] -%}
+{%- assign col = collections[section.settings.collection] -%}
 
-<section class="featured-collection">
-  <div class="featured-collection__header">
-    <h2 class="featured-collection__title">{{ section.settings.title | default: collection.title }}</h2>
-    {%- if section.settings.subtitle != blank -%}
-      <p>{{ section.settings.subtitle }}</p>
+<section class="feat-col">
+  <div class="feat-col__head">
+    <div>
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="feat-col__eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      <h2 class="feat-col__title">{{ section.settings.title | default: col.title }}</h2>
+    </div>
+    {%- if section.settings.show_view_all and col != blank -%}
+      <a href="{{ col.url }}" class="feat-col__view-all">
+        {{ section.settings.view_all_label }}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
     {%- endif -%}
   </div>
 
-  {%- if collection != blank -%}
-    <div class="featured-collection__grid">
-      {%- for product in collection.products limit: section.settings.products_to_show -%}
+  {%- if col != blank -%}
+    <div class="feat-col__grid">
+      {%- for product in col.products limit: section.settings.products_to_show -%}
         {% render 'product-grid-item', product: product %}
       {%- endfor -%}
     </div>
   {%- else -%}
-    <p style="text-align:center;color:#999;">Selecciona una colección en el editor.</p>
-  {%- endif -%}
-
-  {%- if section.settings.show_view_all and collection != blank -%}
-    <div style="text-align:center;margin-top:2rem;">
-      <a href="{{ collection.url }}" style="display:inline-block;padding:.75rem 2rem;border:2px solid currentColor;text-decoration:none;font-weight:600;">
-        {{ section.settings.view_all_label | default: 'Ver todo' }}
-      </a>
-    </div>
+    <p style="text-align:center;color:#999;padding:3rem;">Selecciona una colección en el editor.</p>
   {%- endif -%}
 </section>
 
@@ -48,15 +72,17 @@
   "name": "Colección Destacada",
   "settings": [
     { "type": "collection", "id": "collection", "label": "Colección" },
+    { "type": "text", "id": "eyebrow", "label": "Texto sobre el título", "default": "Lo más vendido" },
     { "type": "text", "id": "title", "label": "Título", "default": "Productos Destacados" },
-    { "type": "text", "id": "subtitle", "label": "Subtítulo" },
-    { "type": "range", "id": "products_to_show", "label": "Productos a mostrar", "min": 2, "max": 12, "step": 1, "default": 4 },
-    { "type": "range", "id": "columns_desktop", "label": "Columnas (desktop)", "min": 2, "max": 5, "step": 1, "default": 4 },
-    { "type": "range", "id": "columns_mobile", "label": "Columnas (móvil)", "min": 1, "max": 3, "step": 1, "default": 2 },
-    { "type": "range", "id": "gap", "label": "Espacio entre items (px)", "min": 8, "max": 48, "step": 4, "default": 20 },
-    { "type": "range", "id": "padding_v", "label": "Padding vertical (px)", "min": 20, "max": 120, "step": 10, "default": 60 },
-    { "type": "checkbox", "id": "show_view_all", "label": "Mostrar 'Ver todo'", "default": true },
-    { "type": "text", "id": "view_all_label", "label": "Texto 'Ver todo'", "default": "Ver toda la colección" }
+    { "type": "range", "id": "products_to_show", "label": "Productos", "min": 2, "max": 12, "step": 2, "default": 4 },
+    { "type": "range", "id": "columns_desktop", "label": "Columnas desktop", "min": 2, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "columns_mobile", "label": "Columnas móvil", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "range", "id": "gap", "label": "Espacio (px)", "min": 8, "max": 48, "step": 4, "default": 24 },
+    { "type": "range", "id": "padding_v", "label": "Padding vertical (px)", "min": 40, "max": 140, "step": 10, "default": 80 },
+    { "type": "checkbox", "id": "show_view_all", "label": "Mostrar enlace 'Ver todo'", "default": true },
+    { "type": "text", "id": "view_all_label", "label": "Texto del enlace", "default": "Ver toda la colección" },
+    { "type": "color", "id": "bg_color", "label": "Fondo", "default": "#ffffff" },
+    { "type": "color", "id": "text_color", "label": "Texto", "default": "#0d0d0d" }
   ],
   "presets": [{ "name": "Colección Destacada" }]
 }

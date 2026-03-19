@@ -2,77 +2,81 @@
   .footer {
     background: {{ section.settings.bg_color }};
     color: {{ section.settings.text_color }};
-    padding: 4rem 1.5rem 2rem;
-    margin-top: 4rem;
-    border-top: 1px solid {{ section.settings.border_color }};
+    padding: 5rem 2rem 0;
   }
   .footer__grid {
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: 1400px; margin: 0 auto;
     display: grid;
-    grid-template-columns: 2fr repeat({{ section.blocks | size | at_most: 3 }}, 1fr);
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     gap: 3rem;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid rgba(255,255,255,.1);
   }
-  @media (max-width: 768px) {
-    .footer__grid { grid-template-columns: 1fr 1fr; }
-    .footer__brand { grid-column: 1 / -1; }
-  }
-  @media (max-width: 480px) {
-    .footer__grid { grid-template-columns: 1fr; }
-  }
-  .footer__brand-name { font-size: 1.25rem; font-weight: 700; margin-bottom: .75rem; }
-  .footer__brand-desc { font-size: .9rem; opacity: .7; line-height: 1.6; max-width: 320px; }
-  .footer__social { display: flex; gap: .75rem; margin-top: 1.25rem; }
+  @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; } .footer__brand { grid-column: 1/-1; } }
+  @media (max-width: 480px) { .footer__grid { grid-template-columns: 1fr; } }
+
+  .footer__logo-svg { height: 44px; width: auto; margin-bottom: 1.25rem; }
+  .footer__desc { font-size: .9rem; opacity: .6; line-height: 1.7; max-width: 300px; margin-bottom: 1.75rem; }
+  .footer__social { display: flex; gap: .75rem; }
   .footer__social a {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(255,255,255,.2); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    width: 2.25rem; height: 2.25rem;
-    border: 1px solid {{ section.settings.border_color }};
-    border-radius: 50%;
     color: {{ section.settings.text_color }};
-    text-decoration: none;
-    transition: background .2s, color .2s;
+    transition: border-color .2s, background .2s;
   }
-  .footer__social a:hover { background: {{ section.settings.text_color }}; color: {{ section.settings.bg_color }}; }
-  .footer__col-title { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1rem; }
-  .footer__links { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
-  .footer__links a { text-decoration: none; font-size: .9rem; opacity: .75; transition: opacity .2s; }
+  .footer__social a:hover { border-color: #c9a84c; background: rgba(201,168,76,.1); }
+
+  .footer__col-title {
+    font-size: .72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: #c9a84c; margin-bottom: 1.25rem;
+  }
+  .footer__links { list-style: none; }
+  .footer__links li + li { margin-top: .625rem; }
+  .footer__links a { font-size: .88rem; opacity: .65; transition: opacity .2s; }
   .footer__links a:hover { opacity: 1; }
+
   .footer__bottom {
-    max-width: 1400px;
-    margin: 3rem auto 0;
-    padding-top: 1.5rem;
-    border-top: 1px solid {{ section.settings.border_color }};
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    font-size: .8rem;
-    opacity: .6;
+    max-width: 1400px; margin: 0 auto;
+    padding: 1.75rem 0;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+    font-size: .78rem; opacity: .5;
   }
-  .footer__payments { display: flex; gap: .5rem; align-items: center; }
+  .footer__payments { display: flex; gap: .4rem; align-items: center; }
+  .footer__payments svg { height: 24px; width: auto; }
 {%- endstyle -%}
 
 <footer class="footer" role="contentinfo">
   <div class="footer__grid">
-
     <div class="footer__brand">
-      <p class="footer__brand-name">{{ shop.name }}</p>
+      <svg class="footer__logo-svg" viewBox="0 0 210 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="8" width="4" height="30" rx="1" fill="#c9a84c"/>
+        <rect x="8" y="14" width="6" height="24" rx="1" fill="{{ section.settings.text_color }}"/>
+        <rect x="16" y="10" width="5" height="28" rx="1" fill="#c9a84c"/>
+        <rect x="23" y="16" width="7" height="22" rx="1" fill="{{ section.settings.text_color }}" opacity=".7"/>
+        <rect x="32" y="12" width="5" height="26" rx="1" fill="#c9a84c" opacity=".6"/>
+        <rect x="2" y="38" width="35" height="3" rx="1.5" fill="{{ section.settings.text_color }}"/>
+        <text x="46" y="29" font-family="Georgia, serif" font-size="15" font-weight="700" fill="{{ section.settings.text_color }}" letter-spacing="2">EL ESTANTE</text>
+        <text x="46" y="41" font-family="Arial, sans-serif" font-size="7.5" font-weight="400" fill="#c9a84c" letter-spacing="5">CHILE</text>
+      </svg>
       {%- if section.settings.brand_desc != blank -%}
-        <p class="footer__brand-desc">{{ section.settings.brand_desc }}</p>
+        <p class="footer__desc">{{ section.settings.brand_desc }}</p>
       {%- endif -%}
-
       <div class="footer__social">
         {%- if section.settings.social_instagram != blank -%}
           <a href="{{ section.settings.social_instagram }}" aria-label="Instagram" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
             </svg>
           </a>
         {%- endif -%}
         {%- if section.settings.social_facebook != blank -%}
           <a href="{{ section.settings.social_facebook }}" aria-label="Facebook" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
               <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
             </svg>
           </a>
@@ -80,7 +84,7 @@
         {%- if section.settings.social_tiktok != blank -%}
           <a href="{{ section.settings.social_tiktok }}" aria-label="TikTok" target="_blank" rel="noopener">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34l-.01-8.41a8.16 8.16 0 0 0 4.77 1.52V5.01a4.85 4.85 0 0 1-1-.32z"/>
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-6.28 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34l-.01-8.41a8.16 8.16 0 0 0 4.77 1.52V5.01a4.85 4.85 0 0 1-1-.32z"/>
             </svg>
           </a>
         {%- endif -%}
@@ -88,7 +92,7 @@
     </div>
 
     {%- for block in section.blocks -%}
-      <div class="footer__col" {{ block.shopify_attributes }}>
+      <div {{ block.shopify_attributes }}>
         <p class="footer__col-title">{{ block.settings.title }}</p>
         {%- if block.settings.menu != blank -%}
           <ul class="footer__links">
@@ -99,7 +103,6 @@
         {%- endif -%}
       </div>
     {%- endfor -%}
-
   </div>
 
   <div class="footer__bottom">
@@ -126,14 +129,13 @@
     }
   ],
   "settings": [
-    { "type": "text", "id": "brand_desc", "label": "Descripción de la marca" },
+    { "type": "textarea", "id": "brand_desc", "label": "Descripción de la marca", "default": "Tu tienda de confianza con los mejores productos y envío a todo Chile." },
     { "type": "url", "id": "social_instagram", "label": "Instagram URL" },
     { "type": "url", "id": "social_facebook", "label": "Facebook URL" },
     { "type": "url", "id": "social_tiktok", "label": "TikTok URL" },
-    { "type": "checkbox", "id": "show_payment_icons", "label": "Mostrar íconos de pago", "default": true },
-    { "type": "color", "id": "bg_color", "label": "Fondo", "default": "#1a1a1a" },
-    { "type": "color", "id": "text_color", "label": "Texto", "default": "#ffffff" },
-    { "type": "color", "id": "border_color", "label": "Bordes", "default": "#333333" }
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Mostrar métodos de pago", "default": true },
+    { "type": "color", "id": "bg_color", "label": "Fondo", "default": "#0d0d0d" },
+    { "type": "color", "id": "text_color", "label": "Texto", "default": "#ffffff" }
   ],
   "presets": [
     {
