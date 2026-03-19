@@ -1,6 +1,15 @@
 {%- comment -%} Usage: {% render 'product-grid-item', product: product %} {%- endcomment -%}
 
-{%- assign discount_pct = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+{%- assign in_stock = false -%}
+{%- for variant in product.variants -%}
+  {%- if variant.inventory_quantity > 0 or variant.inventory_management == blank -%}
+    {%- assign in_stock = true -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign discount_pct = 0 -%}
+{%- if product.compare_at_price > product.price -%}
+  {%- assign discount_pct = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+{%- endif -%}
 
 <article class="product-card" itemscope itemtype="https://schema.org/Product">
   <a href="{{ product.url }}" class="product-card__link" aria-label="{{ product.title | escape }}">
@@ -35,7 +44,7 @@
 
       <div class="product-card__overlay"></div>
 
-      {%- if product.available -%}
+      {%- if in_stock -%}
         <button class="product-card__quick"
           data-product-id="{{ product.variants.first.id }}"
           aria-label="Agregar {{ product.title | escape }} al carrito">
@@ -67,7 +76,7 @@
         </span>
       {%- endif -%}
       <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
-      <link itemprop="availability" href="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+      <link itemprop="availability" href="https://schema.org/{% if in_stock %}InStock{% else %}OutOfStock{% endif %}">
     </div>
   </div>
 </article>

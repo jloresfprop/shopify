@@ -150,7 +150,12 @@
 
   <div class="catalog__grid" id="catalog-grid">
     {%- for product in collection.products -%}
-      {%- assign in_stock = product.available -%}
+      {%- assign in_stock = false -%}
+      {%- for variant in product.variants -%}
+        {%- if variant.inventory_quantity > 0 or variant.inventory_management == blank -%}
+          {%- assign in_stock = true -%}
+        {%- endif -%}
+      {%- endfor -%}
 
       {%- assign discount_pct = 0 -%}
       {%- if product.compare_at_price > product.price -%}
