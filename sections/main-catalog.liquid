@@ -1,0 +1,273 @@
+{%- style -%}
+.catalog { max-width: 1400px; margin: 0 auto; padding: 3rem 1.5rem; }
+
+.catalog__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #1a1a1a;
+}
+.catalog__title { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+.catalog__meta { font-size: .85rem; color: #888; }
+.catalog__meta strong { color: #1a1a1a; }
+
+.catalog__controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.catalog__filter-btn {
+  padding: .45rem 1.1rem;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  border-radius: 2rem;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.catalog__filter-btn:hover,
+.catalog__filter-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.catalog__sort {
+  margin-left: auto;
+  padding: .45rem 1rem;
+  border: 1.5px solid #ddd;
+  border-radius: .5rem;
+  font-size: .85rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.catalog__grid {
+  display: grid;
+  grid-template-columns: repeat({{ section.settings.columns_desktop }}, 1fr);
+  gap: 1.5rem;
+}
+@media (max-width: 900px) { .catalog__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .catalog__grid { grid-template-columns: repeat(1, 1fr); } }
+
+.catalog-card {
+  position: relative;
+  background: #fff;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+  display: flex;
+  flex-direction: column;
+}
+.catalog-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,.1); }
+.catalog-card--agotado { opacity: .7; }
+.catalog-card--agotado:hover { transform: none; box-shadow: none; }
+
+.catalog-card__img-wrap {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.catalog-card__img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+.catalog-card:hover .catalog-card__img-wrap img { transform: scale(1.05); }
+
+.catalog-card__badges { position: absolute; top: .75rem; left: .75rem; display: flex; flex-direction: column; gap: .4rem; }
+.badge {
+  display: inline-block;
+  padding: .25rem .65rem;
+  border-radius: 2rem;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  line-height: 1;
+}
+.badge--sale { background: #ff3b30; color: #fff; }
+.badge--agotado { background: #1a1a1a; color: #fff; }
+.badge--nuevo { background: #34c759; color: #fff; }
+
+.catalog-card__body { padding: 1.1rem 1.1rem 1.25rem; flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+.catalog-card__vendor { font-size: .75rem; color: #999; text-transform: uppercase; letter-spacing: .06em; }
+.catalog-card__title { font-size: .95rem; font-weight: 700; line-height: 1.3; color: #1a1a1a; }
+.catalog-card__price { display: flex; align-items: baseline; gap: .5rem; margin-top: auto; padding-top: .5rem; }
+.catalog-card__price-current { font-size: 1.1rem; font-weight: 800; color: #1a1a1a; }
+.catalog-card__price-compare { font-size: .85rem; text-decoration: line-through; color: #bbb; }
+.catalog-card__price-pct { font-size: .78rem; color: #ff3b30; font-weight: 700; }
+
+.catalog-card__footer { padding: 0 1.1rem 1.1rem; }
+.catalog-card__btn {
+  display: block;
+  width: 100%;
+  padding: .7rem;
+  text-align: center;
+  border-radius: .6rem;
+  font-size: .88rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all .2s;
+  border: none;
+  cursor: pointer;
+}
+.catalog-card__btn--active { background: #1a1a1a; color: #fff; }
+.catalog-card__btn--active:hover { background: #333; }
+.catalog-card__btn--agotado { background: #f0f0f0; color: #999; cursor: not-allowed; }
+
+.catalog__empty { text-align: center; padding: 4rem 2rem; color: #888; }
+.catalog__empty h3 { font-size: 1.25rem; margin-bottom: .5rem; }
+{%- endstyle -%}
+
+<div class="catalog" data-catalog>
+
+  <div class="catalog__header">
+    <div>
+      <h1 class="catalog__title">{{ section.settings.title }}</h1>
+      {%- if section.settings.subtitle != blank -%}
+        <p style="margin-top:.5rem;color:#666;font-size:.95rem">{{ section.settings.subtitle }}</p>
+      {%- endif -%}
+    </div>
+    <p class="catalog__meta">
+      <strong>{{ collection.all_products_count }}</strong> productos en total
+    </p>
+  </div>
+
+  <div class="catalog__controls">
+    <button class="catalog__filter-btn active" data-filter="all">Todos</button>
+    <button class="catalog__filter-btn" data-filter="disponible">Con stock</button>
+    <button class="catalog__filter-btn" data-filter="agotado">Agotados</button>
+
+    <select class="catalog__sort" data-sort>
+      <option value="default">Ordenar por: Destacados</option>
+      <option value="price-asc">Precio: menor a mayor</option>
+      <option value="price-desc">Precio: mayor a menor</option>
+      <option value="name-asc">Nombre A–Z</option>
+      <option value="name-desc">Nombre Z–A</option>
+    </select>
+  </div>
+
+  <div class="catalog__grid" id="catalog-grid">
+    {%- for product in collection.products -%}
+      {%- assign in_stock = false -%}
+      {%- for variant in product.variants -%}
+        {%- if variant.available -%}{%- assign in_stock = true -%}{%- endif -%}
+      {%- endfor -%}
+
+      {%- assign discount_pct = 0 -%}
+      {%- if product.compare_at_price > product.price -%}
+        {%- assign discount_pct = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+      {%- endif -%}
+
+      <div class="catalog-card {% unless in_stock %}catalog-card--agotado{% endunless %}"
+           data-stock="{{ in_stock | downcase }}"
+           data-price="{{ product.price }}"
+           data-title="{{ product.title | downcase }}">
+
+        <a href="{{ product.url }}" class="catalog-card__img-wrap">
+          {%- if product.featured_image -%}
+            {{ product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', alt: product.title }}
+          {%- else -%}
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:2rem">📦</div>
+          {%- endif -%}
+
+          <div class="catalog-card__badges">
+            {%- unless in_stock -%}
+              <span class="badge badge--agotado">Agotado</span>
+            {%- endunless -%}
+            {%- if discount_pct > 0 -%}
+              <span class="badge badge--sale">-{{ discount_pct }}%</span>
+            {%- endif -%}
+          </div>
+        </a>
+
+        <div class="catalog-card__body">
+          {%- if product.vendor != blank -%}
+            <p class="catalog-card__vendor">{{ product.vendor }}</p>
+          {%- endif -%}
+          <h2 class="catalog-card__title">
+            <a href="{{ product.url }}" style="text-decoration:none;color:inherit">{{ product.title }}</a>
+          </h2>
+          <div class="catalog-card__price">
+            <span class="catalog-card__price-current">{{ product.price | money }}</span>
+            {%- if discount_pct > 0 -%}
+              <span class="catalog-card__price-compare">{{ product.compare_at_price | money }}</span>
+              <span class="catalog-card__price-pct">-{{ discount_pct }}%</span>
+            {%- endif -%}
+          </div>
+        </div>
+
+        <div class="catalog-card__footer">
+          {%- if in_stock -%}
+            <a href="{{ product.url }}" class="catalog-card__btn catalog-card__btn--active">Ver producto</a>
+          {%- else -%}
+            <span class="catalog-card__btn catalog-card__btn--agotado">Sin stock</span>
+          {%- endif -%}
+        </div>
+
+      </div>
+    {%- else -%}
+      <div class="catalog__empty" style="grid-column:1/-1">
+        <h3>No hay productos aún</h3>
+        <p>Agrega productos a esta colección desde el Admin.</p>
+      </div>
+    {%- endfor -%}
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const grid   = document.getElementById('catalog-grid');
+  const cards  = () => [...grid.querySelectorAll('.catalog-card')];
+  const btns   = document.querySelectorAll('[data-filter]');
+  const sort   = document.querySelector('[data-sort]');
+  let currentFilter = 'all';
+
+  btns.forEach(btn => btn.addEventListener('click', () => {
+    btns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    applyFilter();
+  }));
+
+  sort.addEventListener('change', applySort);
+
+  function applyFilter() {
+    cards().forEach(card => {
+      const stock = card.dataset.stock === 'true';
+      let show = true;
+      if (currentFilter === 'disponible') show = stock;
+      if (currentFilter === 'agotado') show = !stock;
+      card.style.display = show ? '' : 'none';
+    });
+  }
+
+  function applySort() {
+    const val = sort.value;
+    const sorted = cards().sort((a, b) => {
+      if (val === 'price-asc')  return +a.dataset.price - +b.dataset.price;
+      if (val === 'price-desc') return +b.dataset.price - +a.dataset.price;
+      if (val === 'name-asc')  return a.dataset.title.localeCompare(b.dataset.title);
+      if (val === 'name-desc') return b.dataset.title.localeCompare(a.dataset.title);
+      return 0;
+    });
+    sorted.forEach(c => grid.appendChild(c));
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "El Inventario — Catálogo",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Título", "default": "El Inventario" },
+    { "type": "text", "id": "subtitle", "label": "Subtítulo", "default": "Todo lo que tenemos, disponible o no." },
+    { "type": "range", "id": "columns_desktop", "label": "Columnas (desktop)", "min": 2, "max": 5, "step": 1, "default": 4 }
+  ],
+  "presets": [
+    { "name": "El Inventario — Catálogo" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-catalog",
+      "settings": {
+        "title": "El Inventario",
+        "subtitle": "Todo lo que tenemos, disponible o no.",
+        "columns_desktop": 4
+      }
+    }
+  },
+  "order": ["main"]
+}
