@@ -1,0 +1,63 @@
+{%- comment -%} Usage: {% render 'product-grid-item', product: product %} {%- endcomment -%}
+
+<article class="product-card" itemscope itemtype="https://schema.org/Product">
+  <a href="{{ product.url }}" class="product-card__link" aria-label="{{ product.title | escape }}">
+    <div class="product-card__media">
+      {%- if product.featured_media -%}
+        {{ product.featured_media | image_url: width: 600 | image_tag:
+          class: 'product-card__img',
+          loading: 'lazy',
+          widths: '300, 400, 600',
+          sizes: '(min-width: 1200px) 300px, (min-width: 768px) 25vw, 50vw',
+          itemprop: 'image'
+        }}
+        {%- if product.media.size > 1 -%}
+          {{ product.media[1] | image_url: width: 600 | image_tag:
+            class: 'product-card__img product-card__img--hover',
+            loading: 'lazy'
+          }}
+        {%- endif -%}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'product-card__img product-card__img--placeholder' }}
+      {%- endif -%}
+
+      {%- if product.compare_at_price > product.price -%}
+        {%- assign discount = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
+        <span class="product-card__badge">-{{ discount }}%</span>
+      {%- elsif product.tags contains 'nuevo' -%}
+        <span class="product-card__badge product-card__badge--new">Nuevo</span>
+      {%- endif -%}
+    </div>
+
+    <div class="product-card__info">
+      <p class="product-card__vendor" itemprop="brand">{{ product.vendor }}</p>
+      <h3 class="product-card__title" itemprop="name">{{ product.title }}</h3>
+      <div class="product-card__price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+        {%- if product.compare_at_price > product.price -%}
+          <s class="product-card__price--compare">{{ product.compare_at_price | money }}</s>
+        {%- endif -%}
+        <span class="product-card__price--current" itemprop="price" content="{{ product.price | divided_by: 100.0 }}">
+          {{ product.price | money }}
+        </span>
+        <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
+      </div>
+    </div>
+  </a>
+
+  {%- unless product.has_only_default_variant -%}
+    <a href="{{ product.url }}" class="product-card__cta">Seleccionar opciones</a>
+  {%- else -%}
+    <form method="post" action="/cart/add">
+      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+      <input type="hidden" name="quantity" value="1">
+      <button type="submit" class="product-card__cta"
+        {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
+        {%- if product.selected_or_first_available_variant.available -%}
+          Agregar al carrito
+        {%- else -%}
+          Agotado
+        {%- endif -%}
+      </button>
+    </form>
+  {%- endunless -%}
+</article>

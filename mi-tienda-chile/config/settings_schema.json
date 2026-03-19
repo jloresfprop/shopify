@@ -1,0 +1,24 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Mi Tienda Chile",
+    "theme_version": "1.0.0",
+    "theme_author": "Custom",
+    "theme_documentation_url": "",
+    "theme_support_url": ""
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      { "type": "color", "id": "color_primary", "label": "Color primario", "default": "#0066cc" },
+      { "type": "color", "id": "color_text", "label": "Color texto", "default": "#1a1a1a" },
+      { "type": "color", "id": "color_bg", "label": "Color fondo", "default": "#ffffff" }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      { "type": "font_picker", "id": "font_body", "label": "Fuente base", "default": "inter_n4" }
+    ]
+  }
+]

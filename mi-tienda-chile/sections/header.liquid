@@ -1,0 +1,142 @@
+{%- style -%}
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: {{ section.settings.bg_color }};
+    border-bottom: 1px solid {{ section.settings.border_color }};
+  }
+  .header__inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: {{ section.settings.height }}px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+  .header__logo { flex-shrink: 0; }
+  .header__logo img { height: {{ section.settings.logo_height }}px; width: auto; }
+  .header__logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: {{ section.settings.text_color }};
+  }
+  .header__nav { display: flex; gap: 2rem; list-style: none; }
+  .header__nav a {
+    text-decoration: none;
+    font-size: .95rem;
+    font-weight: 500;
+    color: {{ section.settings.text_color }};
+    transition: opacity .2s;
+  }
+  .header__nav a:hover { opacity: .65; }
+  .header__actions { display: flex; align-items: center; gap: 1rem; }
+  .header__icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: .25rem;
+    color: {{ section.settings.text_color }};
+    display: flex;
+    align-items: center;
+  }
+  .header__cart-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: {{ section.settings.badge_color }};
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    border-radius: 50%;
+    margin-left: .25rem;
+  }
+  .header__hamburger { display: none; }
+
+  @media (max-width: 768px) {
+    .header__nav { display: none; }
+    .header__hamburger { display: flex; }
+  }
+{%- endstyle -%}
+
+<header class="header" role="banner">
+  <div class="header__inner">
+
+    <a href="/" class="header__logo">
+      {%- if section.settings.logo != blank -%}
+        {{ section.settings.logo | image_url: height: section.settings.logo_height | image_tag: loading: 'eager', fetchpriority: 'high' }}
+      {%- else -%}
+        <span class="header__logo-text">{{ shop.name }}</span>
+      {%- endif -%}
+    </a>
+
+    {%- if section.settings.menu != blank -%}
+      <nav aria-label="Navegación principal">
+        <ul class="header__nav">
+          {%- for link in linklists[section.settings.menu].links -%}
+            <li>
+              <a href="{{ link.url }}"
+                {% if link.active %}aria-current="page"{% endif %}>
+                {{ link.title }}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    <div class="header__actions">
+      <button class="header__icon-btn" aria-label="Buscar" data-search-toggle>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </button>
+
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="/account" class="header__icon-btn" aria-label="Mi cuenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </a>
+      {%- endif -%}
+
+      <a href="/cart" class="header__icon-btn" aria-label="Carrito ({{ cart.item_count }} artículos)" data-cart-toggle>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        {%- if cart.item_count > 0 -%}
+          <span class="header__cart-count">{{ cart.item_count }}</span>
+        {%- endif -%}
+      </a>
+
+      <button class="header__icon-btn header__hamburger" aria-label="Menú" data-menu-toggle>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "range", "id": "logo_height", "label": "Alto del logo (px)", "min": 20, "max": 80, "step": 4, "default": 40 },
+    { "type": "link_list", "id": "menu", "label": "Menú de navegación", "default": "main-menu" },
+    { "type": "range", "id": "height", "label": "Alto del header (px)", "min": 50, "max": 100, "step": 5, "default": 64 },
+    { "type": "color", "id": "bg_color", "label": "Fondo", "default": "#ffffff" },
+    { "type": "color", "id": "text_color", "label": "Texto / íconos", "default": "#1a1a1a" },
+    { "type": "color", "id": "border_color", "label": "Borde inferior", "default": "#e5e5e5" },
+    { "type": "color", "id": "badge_color", "label": "Burbuja carrito", "default": "#0066cc" }
+  ]
+}
+{% endschema %}

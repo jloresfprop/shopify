@@ -1,0 +1,148 @@
+{%- style -%}
+  .footer {
+    background: {{ section.settings.bg_color }};
+    color: {{ section.settings.text_color }};
+    padding: 4rem 1.5rem 2rem;
+    margin-top: 4rem;
+    border-top: 1px solid {{ section.settings.border_color }};
+  }
+  .footer__grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr repeat({{ section.blocks | size | at_most: 3 }}, 1fr);
+    gap: 3rem;
+  }
+  @media (max-width: 768px) {
+    .footer__grid { grid-template-columns: 1fr 1fr; }
+    .footer__brand { grid-column: 1 / -1; }
+  }
+  @media (max-width: 480px) {
+    .footer__grid { grid-template-columns: 1fr; }
+  }
+  .footer__brand-name { font-size: 1.25rem; font-weight: 700; margin-bottom: .75rem; }
+  .footer__brand-desc { font-size: .9rem; opacity: .7; line-height: 1.6; max-width: 320px; }
+  .footer__social { display: flex; gap: .75rem; margin-top: 1.25rem; }
+  .footer__social a {
+    display: flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem;
+    border: 1px solid {{ section.settings.border_color }};
+    border-radius: 50%;
+    color: {{ section.settings.text_color }};
+    text-decoration: none;
+    transition: background .2s, color .2s;
+  }
+  .footer__social a:hover { background: {{ section.settings.text_color }}; color: {{ section.settings.bg_color }}; }
+  .footer__col-title { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1rem; }
+  .footer__links { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .footer__links a { text-decoration: none; font-size: .9rem; opacity: .75; transition: opacity .2s; }
+  .footer__links a:hover { opacity: 1; }
+  .footer__bottom {
+    max-width: 1400px;
+    margin: 3rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid {{ section.settings.border_color }};
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: .8rem;
+    opacity: .6;
+  }
+  .footer__payments { display: flex; gap: .5rem; align-items: center; }
+{%- endstyle -%}
+
+<footer class="footer" role="contentinfo">
+  <div class="footer__grid">
+
+    <div class="footer__brand">
+      <p class="footer__brand-name">{{ shop.name }}</p>
+      {%- if section.settings.brand_desc != blank -%}
+        <p class="footer__brand-desc">{{ section.settings.brand_desc }}</p>
+      {%- endif -%}
+
+      <div class="footer__social">
+        {%- if section.settings.social_instagram != blank -%}
+          <a href="{{ section.settings.social_instagram }}" aria-label="Instagram" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+        {%- endif -%}
+        {%- if section.settings.social_facebook != blank -%}
+          <a href="{{ section.settings.social_facebook }}" aria-label="Facebook" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+          </a>
+        {%- endif -%}
+        {%- if section.settings.social_tiktok != blank -%}
+          <a href="{{ section.settings.social_tiktok }}" aria-label="TikTok" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34l-.01-8.41a8.16 8.16 0 0 0 4.77 1.52V5.01a4.85 4.85 0 0 1-1-.32z"/>
+            </svg>
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- for block in section.blocks -%}
+      <div class="footer__col" {{ block.shopify_attributes }}>
+        <p class="footer__col-title">{{ block.settings.title }}</p>
+        {%- if block.settings.menu != blank -%}
+          <ul class="footer__links">
+            {%- for link in linklists[block.settings.menu].links -%}
+              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+    {%- endfor -%}
+
+  </div>
+
+  <div class="footer__bottom">
+    <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. Todos los derechos reservados.</span>
+    {%- if section.settings.show_payment_icons -%}
+      <div class="footer__payments">
+        {{ shop.enabled_payment_types | payment_type_svg_tag: class: 'payment-icon' }}
+      </div>
+    {%- endif -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "blocks": [
+    {
+      "type": "link_column",
+      "name": "Columna de enlaces",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Título", "default": "Información" },
+        { "type": "link_list", "id": "menu", "label": "Menú" }
+      ]
+    }
+  ],
+  "settings": [
+    { "type": "text", "id": "brand_desc", "label": "Descripción de la marca" },
+    { "type": "url", "id": "social_instagram", "label": "Instagram URL" },
+    { "type": "url", "id": "social_facebook", "label": "Facebook URL" },
+    { "type": "url", "id": "social_tiktok", "label": "TikTok URL" },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "Mostrar íconos de pago", "default": true },
+    { "type": "color", "id": "bg_color", "label": "Fondo", "default": "#1a1a1a" },
+    { "type": "color", "id": "text_color", "label": "Texto", "default": "#ffffff" },
+    { "type": "color", "id": "border_color", "label": "Bordes", "default": "#333333" }
+  ],
+  "presets": [
+    {
+      "name": "Footer",
+      "blocks": [
+        { "type": "link_column", "settings": { "title": "Ayuda" } },
+        { "type": "link_column", "settings": { "title": "Empresa" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

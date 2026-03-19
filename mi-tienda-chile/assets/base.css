@@ -1,0 +1,46 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-primary: #0066cc;
+  --color-text: #1a1a1a;
+  --color-bg: #ffffff;
+  --color-border: #e5e5e5;
+  --font-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --transition: .2s ease;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-base); color: var(--color-text); background: var(--color-bg); line-height: 1.6; }
+img, video { max-width: 100%; display: block; }
+a { color: inherit; }
+
+/* Product Card */
+.product-card { display: flex; flex-direction: column; }
+.product-card__link { text-decoration: none; }
+.product-card__media { position: relative; overflow: hidden; aspect-ratio: 1; background: #f5f5f5; }
+.product-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition); }
+.product-card__img--hover { position: absolute; inset: 0; opacity: 0; transition: opacity var(--transition); }
+.product-card__media:hover .product-card__img--hover { opacity: 1; }
+.product-card__media:hover .product-card__img:first-child { transform: scale(1.05); }
+.product-card__badge {
+  position: absolute; top: .75rem; left: .75rem;
+  background: #e53e3e; color: #fff;
+  font-size: .75rem; font-weight: 700;
+  padding: .25rem .5rem; border-radius: 3px;
+}
+.product-card__badge--new { background: var(--color-primary); }
+.product-card__info { padding: .75rem 0; flex: 1; }
+.product-card__vendor { font-size: .75rem; color: #666; text-transform: uppercase; letter-spacing: .05em; }
+.product-card__title { font-size: .95rem; font-weight: 600; margin: .25rem 0 .5rem; }
+.product-card__price { display: flex; align-items: center; gap: .5rem; }
+.product-card__price--compare { font-size: .85rem; color: #999; text-decoration: line-through; }
+.product-card__price--current { font-weight: 700; color: var(--color-text); }
+.product-card__cta {
+  display: block; width: 100%; padding: .6rem 1rem;
+  background: var(--color-primary); color: #fff;
+  border: none; cursor: pointer;
+  font-size: .9rem; font-weight: 600; text-align: center; text-decoration: none;
+  transition: background var(--transition); border-radius: 3px; margin-top: .5rem;
+}
+.product-card__cta:hover { background: #0052a3; }
+.product-card__cta:disabled { background: #ccc; cursor: not-allowed; }

@@ -1,0 +1,75 @@
+{%- style -%}
+  .hero-banner {
+    position: relative;
+    min-height: {{ section.settings.height }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: {{ section.settings.bg_color }};
+  }
+  .hero-banner__bg {
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  }
+  .hero-banner__content {
+    position: relative;
+    z-index: 1;
+    text-align: {{ section.settings.text_align }};
+    color: {{ section.settings.text_color }};
+    max-width: 800px;
+    padding: 2rem;
+  }
+  .hero-banner__title { font-size: clamp(2rem, 5vw, 4rem); font-weight: 700; margin: 0 0 1rem; }
+  .hero-banner__subtitle { font-size: clamp(1rem, 2vw, 1.5rem); margin: 0 0 2rem; }
+  .hero-banner__cta {
+    display: inline-block;
+    padding: .875rem 2rem;
+    background: {{ section.settings.btn_color }};
+    color: {{ section.settings.btn_text_color }};
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: opacity .2s;
+  }
+  .hero-banner__cta:hover { opacity: .85; }
+{%- endstyle -%}
+
+<section class="hero-banner">
+  {%- if section.settings.image != blank -%}
+    {{ section.settings.image | image_url: width: 1920 | image_tag: class: 'hero-banner__bg', loading: 'eager', fetchpriority: 'high' }}
+  {%- endif -%}
+  <div class="hero-banner__content">
+    <h1 class="hero-banner__title">{{ section.settings.title }}</h1>
+    <p class="hero-banner__subtitle">{{ section.settings.subtitle }}</p>
+    {%- if section.settings.btn_label != blank -%}
+      <a href="{{ section.settings.btn_link }}" class="hero-banner__cta">{{ section.settings.btn_label }}</a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "tag": "section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Imagen de fondo" },
+    { "type": "text", "id": "title", "label": "Título", "default": "Bienvenido a nuestra tienda" },
+    { "type": "text", "id": "subtitle", "label": "Subtítulo", "default": "Los mejores productos para ti" },
+    { "type": "text", "id": "btn_label", "label": "Texto del botón", "default": "Ver productos" },
+    { "type": "url", "id": "btn_link", "label": "Enlace del botón" },
+    { "type": "range", "id": "height", "label": "Altura (px)", "min": 300, "max": 900, "step": 50, "default": 600 },
+    { "type": "range", "id": "overlay_opacity", "label": "Opacidad overlay", "min": 0, "max": 80, "step": 5, "default": 30 },
+    { "type": "select", "id": "text_align", "label": "Alineación", "options": [{"value":"left","label":"Izquierda"},{"value":"center","label":"Centro"},{"value":"right","label":"Derecha"}], "default": "center" },
+    { "type": "color", "id": "bg_color", "label": "Color de fondo", "default": "#1a1a1a" },
+    { "type": "color", "id": "text_color", "label": "Color de texto", "default": "#ffffff" },
+    { "type": "color", "id": "btn_color", "label": "Color botón", "default": "#0066cc" },
+    { "type": "color", "id": "btn_text_color", "label": "Texto botón", "default": "#ffffff" }
+  ],
+  "presets": [{ "name": "Hero Banner" }]
+}
+{% endschema %}
