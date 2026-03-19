@@ -1,0 +1,142 @@
+{%- style -%}
+.cart { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem; }
+.cart__title { font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
+.cart__empty { text-align: center; padding: 4rem 2rem; color: #888; }
+.cart__empty a { color: #1a1a1a; font-weight: 700; }
+.cart__item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid #eee;
+}
+.cart__item img { width: 80px; height: 80px; object-fit: cover; border-radius: .5rem; background: #f5f5f5; }
+.cart__item-title { font-weight: 700; font-size: .95rem; }
+.cart__item-variant { font-size: .8rem; color: #999; margin-top: .2rem; }
+.cart__item-price { font-size: .95rem; font-weight: 700; margin-top: .5rem; }
+.cart__item-qty { display: flex; align-items: center; gap: .5rem; margin-top: .5rem; }
+.cart__item-qty button {
+  width: 28px; height: 28px;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.cart__item-qty input {
+  width: 36px; text-align: center;
+  border: 1.5px solid #ddd;
+  border-radius: .4rem;
+  padding: .2rem;
+  font-size: .9rem;
+}
+.cart__remove { font-size: .78rem; color: #bbb; cursor: pointer; text-decoration: underline; margin-top: .4rem; display: block; }
+.cart__summary {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 1rem;
+}
+.cart__summary-row { display: flex; justify-content: space-between; padding: .4rem 0; font-size: .95rem; }
+.cart__summary-row--total { font-weight: 800; font-size: 1.15rem; border-top: 2px solid #1a1a1a; margin-top: .75rem; padding-top: .75rem; }
+.cart__checkout {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: #1a1a1a;
+  color: #fff;
+  text-align: center;
+  border: none;
+  border-radius: .75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .2s;
+}
+.cart__checkout:hover { background: #333; }
+.cart__continue { display: block; text-align: center; margin-top: 1rem; font-size: .88rem; color: #888; text-decoration: none; }
+.cart__continue:hover { color: #1a1a1a; }
+{%- endstyle -%}
+
+<div class="cart">
+  <h1 class="cart__title">Tu carrito</h1>
+
+  {%- if cart.item_count == 0 -%}
+    <div class="cart__empty">
+      <p style="font-size:3rem;margin-bottom:1rem">🛒</p>
+      <p style="font-size:1.1rem;margin-bottom:1.5rem">Tu carrito está vacío</p>
+      <a href="/collections/all">Ver catálogo →</a>
+    </div>
+  {%- else -%}
+    <form action="/cart" method="post">
+      {%- for item in cart.items -%}
+        <div class="cart__item">
+          <a href="{{ item.url }}">
+            {%- if item.image -%}
+              {{ item.image | image_url: width: 160 | image_tag: loading: 'lazy', alt: item.title }}
+            {%- else -%}
+              <div style="width:80px;height:80px;background:#f5f5f5;border-radius:.5rem;display:flex;align-items:center;justify-content:center;font-size:1.5rem">📦</div>
+            {%- endif -%}
+          </a>
+
+          <div>
+            <p class="cart__item-title">{{ item.product.title }}</p>
+            {%- unless item.variant.title == 'Default Title' -%}
+              <p class="cart__item-variant">{{ item.variant.title }}</p>
+            {%- endunless -%}
+            <p class="cart__item-price">{{ item.final_line_price | money }}</p>
+            <div class="cart__item-qty">
+              <button type="button" onclick="updateQty('{{ item.key }}', {{ item.quantity | minus: 1 }})">−</button>
+              <input type="number" value="{{ item.quantity }}" min="1" id="qty-{{ item.key }}" onchange="updateQty('{{ item.key }}', this.value)">
+              <button type="button" onclick="updateQty('{{ item.key }}', {{ item.quantity | plus: 1 }})">+</button>
+            </div>
+            <a class="cart__remove" onclick="updateQty('{{ item.key }}', 0); return false;" href="#">Eliminar</a>
+          </div>
+
+          <div style="text-align:right">
+            <p style="font-size:.85rem;color:#999">{{ item.price | money }} c/u</p>
+          </div>
+        </div>
+      {%- endfor -%}
+
+      <div class="cart__summary">
+        <div class="cart__summary-row">
+          <span>Subtotal ({{ cart.item_count }} artículos)</span>
+          <span>{{ cart.total_price | money }}</span>
+        </div>
+        <div class="cart__summary-row">
+          <span>Envío</span>
+          <span>Calculado al pagar</span>
+        </div>
+        <div class="cart__summary-row cart__summary-row--total">
+          <span>Total</span>
+          <span>{{ cart.total_price | money }}</span>
+        </div>
+      </div>
+
+      <a href="/checkout" class="cart__checkout">Ir a pagar →</a>
+      <a href="/collections/all" class="cart__continue">← Seguir comprando</a>
+    </form>
+  {%- endif -%}
+</div>
+
+<script>
+function updateQty(key, qty) {
+  fetch('/cart/change.js', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: key, quantity: parseInt(qty) })
+  }).then(() => location.reload());
+}
+</script>
+
+{% schema %}
+{
+  "name": "Carrito",
+  "settings": []
+}
+{% endschema %}
