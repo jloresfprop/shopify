@@ -2,7 +2,7 @@
   .product-page {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.5rem; /* v2 */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
@@ -93,7 +93,8 @@
         {%- endfor -%}
       {%- endunless -%}
 
-      {%- assign product_in_stock = product.tags contains 'em-stock' -%}
+      {%- assign product_in_stock = false -%}
+      {%- if product.tags contains 'em-stock' -%}{%- assign product_in_stock = true -%}{%- endif -%}
       <button type="submit" class="product-page__btn"
         {% unless product_in_stock %}disabled{% endunless %}>
         {%- if product_in_stock -%}
