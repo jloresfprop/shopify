@@ -53,8 +53,9 @@
   </a>
 
   <div class="product-card__info">
-    {%- if product.vendor != blank -%}
-      <p class="product-card__vendor" itemprop="brand">{{ product.vendor }}</p>
+    {%- assign p_label = product.type | default: product.vendor -%}
+    {%- if p_label != blank -%}
+      <p class="product-card__vendor" itemprop="brand">{{ p_label }}</p>
     {%- endif -%}
 
     <h3 class="product-card__title" itemprop="name">
