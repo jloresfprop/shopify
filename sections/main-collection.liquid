@@ -37,7 +37,7 @@
 <div class="collection-grid">
   {%- assign available_products = 0 -%}
   {%- for product in collection.products -%}
-    {%- if product.available -%}
+    {%- if product.tags contains 'em-stock' -%}
       {%- assign available_products = available_products | plus: 1 -%}
       {% render 'product-grid-item', product: product %}
     {%- endif -%}

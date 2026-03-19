@@ -93,9 +93,10 @@
         {%- endfor -%}
       {%- endunless -%}
 
+      {%- assign product_in_stock = product.tags contains 'em-stock' -%}
       <button type="submit" class="product-page__btn"
-        {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
-        {%- if product.selected_or_first_available_variant.available -%}
+        {% unless product_in_stock %}disabled{% endunless %}>
+        {%- if product_in_stock -%}
           Agregar al carrito
         {%- else -%}
           Agotado
