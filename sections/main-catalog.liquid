@@ -183,8 +183,9 @@
         </a>
 
         <div class="catalog-card__body">
-          {%- if product.vendor != blank -%}
-            <p class="catalog-card__vendor">{{ product.vendor }}</p>
+          {%- assign p_label = product.type | default: product.vendor -%}
+          {%- if p_label != blank -%}
+            <p class="catalog-card__vendor">{{ p_label }}</p>
           {%- endif -%}
           <h2 class="catalog-card__title">
             <a href="{{ product.url }}" style="text-decoration:none;color:inherit">{{ product.title }}</a>
