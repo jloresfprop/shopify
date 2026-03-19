@@ -35,11 +35,16 @@
 </div>
 
 <div class="collection-grid">
+  {%- assign available_products = 0 -%}
   {%- for product in collection.products -%}
-    {% render 'product-grid-item', product: product %}
-  {%- else -%}
-    <p style="grid-column:1/-1;text-align:center;padding:3rem;color:#999;">Esta colección no tiene productos.</p>
+    {%- if product.available -%}
+      {%- assign available_products = available_products | plus: 1 -%}
+      {% render 'product-grid-item', product: product %}
+    {%- endif -%}
   {%- endfor -%}
+  {%- if available_products == 0 -%}
+    <p style="grid-column:1/-1;text-align:center;padding:3rem;color:#999;">No hay productos disponibles en este momento.</p>
+  {%- endif -%}
 </div>
 
 {%- if paginate.pages > 1 -%}

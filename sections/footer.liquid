@@ -110,6 +110,11 @@
     {%- if section.settings.show_payment_icons -%}
       <div class="footer__payments">
         {{ shop.enabled_payment_types | payment_type_svg_tag: class: 'payment-icon' }}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40" style="height:24px;width:auto;vertical-align:middle;" aria-label="Mercado Pago">
+          <rect width="60" height="40" rx="5" fill="#00B1EA"/>
+          <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="bold" fill="#ffffff">MERCADO</text>
+          <text x="50%" y="76%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="bold" fill="#ffffff">PAGO</text>
+        </svg>
       </div>
     {%- endif -%}
   </div>
