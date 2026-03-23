@@ -2,3 +2,5 @@
 scripts/.env
 node_modules/
 .claude/
+el-estante-cl.json
+*.json.tmp*

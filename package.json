@@ -3,7 +3,22 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "auth": "node scripts/get-token.js",
     "sync": "node scripts/sync-dropify.js",
-    "sync:dry": "node scripts/sync-dropify.js --dry-run"
+    "sync:dry": "node scripts/sync-dropify.js --dry-run",
+    "ml:dry": "node scripts/publish-mercadolibre.js --dry-run",
+    "ml:publish": "node scripts/publish-mercadolibre.js",
+    "ml:bridge:dry": "node scripts/ml-orders-bridge.js --dry-run",
+    "ml:bridge": "node scripts/ml-orders-bridge.js",
+    "auto-sync": "node scripts/auto-sync.js",
+    "start": "node scripts/start.js",
+    "dev": "node scripts/dev.js",
+    "theme:push": "shopify theme push --theme 133827002465 --store el-estante-cl.myshopify.com --allow-live"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
+  },
+  "dependencies": {
+    "googleapis": "^171.4.0"
   }
 }

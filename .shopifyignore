@@ -1,0 +1,7 @@
+*.tmp.*
+*.tmp
+*~
+.DS_Store
+node_modules/*
+scripts/*
+*.json.tmp*

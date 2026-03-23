@@ -1,0 +1,18 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "bcf70cc3da8ad27e52d75ff0abd3f0fe"
+name = "syncra"
+application_url = "https://example.com"
+embedded = false
+
+[webhooks]
+api_version = "2026-01"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_products,write_products,read_inventory,write_inventory,read_content,write_content,read_themes,write_themes,read_online_store_navigation,write_online_store_navigation,read_publications,write_publications,read_orders,read_customers,read_locations,read_discounts,write_discounts"
+optional_scopes = [ ]
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [ "http://localhost:3000/callback" ]
