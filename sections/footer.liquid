@@ -51,15 +51,27 @@
 <footer class="footer" role="contentinfo">
   <div class="footer__grid">
     <div class="footer__brand">
-      <svg class="footer__logo-svg" viewBox="0 0 210 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="8" width="4" height="30" rx="1" fill="#c9a84c"/>
-        <rect x="8" y="14" width="6" height="24" rx="1" fill="{{ section.settings.text_color }}"/>
-        <rect x="16" y="10" width="5" height="28" rx="1" fill="#c9a84c"/>
-        <rect x="23" y="16" width="7" height="22" rx="1" fill="{{ section.settings.text_color }}" opacity=".7"/>
-        <rect x="32" y="12" width="5" height="26" rx="1" fill="#c9a84c" opacity=".6"/>
-        <rect x="2" y="38" width="35" height="3" rx="1.5" fill="{{ section.settings.text_color }}"/>
-        <text x="46" y="29" font-family="Georgia, serif" font-size="15" font-weight="700" fill="{{ section.settings.text_color }}" letter-spacing="2">EL ESTANTE</text>
-        <text x="46" y="41" font-family="Arial, sans-serif" font-size="7.5" font-weight="400" fill="#c9a84c" letter-spacing="5">CHILE</text>
+      <svg class="footer__logo-svg" viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1"  y="2" width="2.5" height="58" rx="1.2" fill="#C9A84C"/>
+        <rect x="42" y="2" width="2.5" height="58" rx="1.2" fill="#C9A84C"/>
+        <rect x="1" y="2"  width="44" height="2.5" rx="1.2" fill="#C9A84C"/>
+        <rect x="1" y="32" width="44" height="2.5" rx="1.2" fill="#C9A84C"/>
+        <rect x="1" y="60" width="44" height="2.5" rx="1.2" fill="#C9A84C"/>
+        <rect x="5"  y="6"  width="10" height="24" rx="1.5" fill="#C9A84C"/>
+        <rect x="5"  y="6"  width="10" height="5"  rx="1.5" fill="#a87828"/>
+        <rect x="17" y="9"  width="8"  height="21" rx="1.5" fill="#C9A84C" opacity=".8"/>
+        <rect x="17" y="9"  width="8"  height="4"  rx="1.5" fill="#a87828" opacity=".8"/>
+        <rect x="27" y="7"  width="11" height="23" rx="1.5" fill="#C9A84C" opacity=".65"/>
+        <rect x="27" y="7"  width="11" height="5"  rx="1.5" fill="#a87828" opacity=".65"/>
+        <rect x="5"  y="36" width="9"  height="22" rx="1.5" fill="#C9A84C" opacity=".7"/>
+        <rect x="5"  y="36" width="9"  height="4"  rx="1.5" fill="#a87828" opacity=".7"/>
+        <rect x="16" y="38" width="12" height="20" rx="1.5" fill="#C9A84C"/>
+        <rect x="16" y="38" width="12" height="5"  rx="1.5" fill="#a87828"/>
+        <rect x="30" y="36" width="9"  height="22" rx="1.5" fill="#C9A84C" opacity=".75"/>
+        <rect x="30" y="36" width="9"  height="5"  rx="1.5" fill="#a87828" opacity=".75"/>
+        <text x="54" y="30" font-family="Georgia, serif" font-size="21" font-weight="700" letter-spacing="2.5" fill="{{ section.settings.text_color }}">EL ESTANTE</text>
+        <line x1="54" y1="35" x2="214" y2="35" stroke="#C9A84C" stroke-width="1"/>
+        <text x="54" y="47" font-family="Georgia, serif" font-size="9.5" letter-spacing="6" fill="#C9A84C">C H I L E</text>
       </svg>
       {%- if section.settings.brand_desc != blank -%}
         <p class="footer__desc">{{ section.settings.brand_desc }}</p>
