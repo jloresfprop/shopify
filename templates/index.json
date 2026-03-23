@@ -24,7 +24,7 @@
     "featured": {
       "type": "featured-collection",
       "settings": {
-        "collection": "frontpage",
+        "collection": "all",
         "eyebrow": "Lo más vendido",
         "title": "Productos Disponibles",
         "products_to_show": 8,
