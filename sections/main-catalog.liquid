@@ -151,9 +151,9 @@
   <div class="catalog__grid" id="catalog-grid">
     {%- for product in collection.products -%}
       {%- assign in_stock = false -%}
-      {%- if product.tags contains 'em-stock' -%}
-        {%- assign in_stock = true -%}
-      {%- endif -%}
+      {%- assign _total_qty = 0 -%}
+      {%- for _v in product.variants -%}{%- assign _total_qty = _total_qty | plus: _v.inventory_quantity -%}{%- endfor -%}
+      {%- if _total_qty > 0 -%}{%- assign in_stock = true -%}{%- endif -%}
 
       {%- assign discount_pct = 0 -%}
       {%- if product.compare_at_price > product.price -%}

@@ -1,9 +1,5 @@
 {%- comment -%} Usage: {% render 'product-grid-item', product: product %} {%- endcomment -%}
 
-{%- assign in_stock = false -%}
-{%- if product.tags contains 'em-stock' -%}
-  {%- assign in_stock = true -%}
-{%- endif -%}
 {%- assign discount_pct = 0 -%}
 {%- if product.compare_at_price > product.price -%}
   {%- assign discount_pct = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
@@ -42,13 +38,11 @@
 
       <div class="product-card__overlay"></div>
 
-      {%- if in_stock -%}
-        <button class="product-card__quick"
-          data-product-id="{{ product.variants.first.id }}"
-          aria-label="Agregar {{ product.title | escape }} al carrito">
-          + Agregar al carrito
-        </button>
-      {%- endif -%}
+      <button class="product-card__quick"
+        data-product-id="{{ product.variants.first.id }}"
+        aria-label="Agregar {{ product.title | escape }} al carrito">
+        + Agregar al carrito
+      </button>
     </div>
   </a>
 
@@ -75,7 +69,7 @@
         </span>
       {%- endif -%}
       <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
-      <link itemprop="availability" href="https://schema.org/{% if in_stock %}InStock{% else %}OutOfStock{% endif %}">
+      <link itemprop="availability" href="https://schema.org/InStock">
     </div>
   </div>
 </article>

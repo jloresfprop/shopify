@@ -63,7 +63,9 @@
       {%- assign shown = 0 -%}
       {%- for product in col.products -%}
         {%- if shown >= section.settings.products_to_show -%}{%- break -%}{%- endif -%}
-        {%- if product.tags contains 'em-stock' -%}
+        {%- assign _stock = 0 -%}
+        {%- for _v in product.variants -%}{%- assign _stock = _stock | plus: _v.inventory_quantity -%}{%- endfor -%}
+        {%- if _stock > 0 -%}
           {% render 'product-grid-item', product: product %}
           {%- assign shown = shown | plus: 1 -%}
         {%- endif -%}

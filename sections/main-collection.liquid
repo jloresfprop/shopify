@@ -146,8 +146,10 @@
   <div class="col-grid" id="col-grid">
     {%- paginate collection.products by section.settings.products_per_page -%}
       {%- for product in collection.products -%}
+        {%- assign _total = 0 -%}
+        {%- for _v in product.variants -%}{%- assign _total = _total | plus: _v.inventory_quantity -%}{%- endfor -%}
         {%- assign in_stock = false -%}
-        {%- if product.tags contains 'em-stock' -%}{%- assign in_stock = true -%}{%- endif -%}
+        {%- if _total > 0 -%}{%- assign in_stock = true -%}{%- endif -%}
         {%- if show_all == false and in_stock == false -%}{%- continue -%}{%- endif -%}
 
         {%- assign discount = 0 -%}
@@ -174,7 +176,8 @@
           </a>
 
           <div class="p-card__body">
-            {%- if product.vendor != blank -%}<p class="p-card__vendor">{{ product.vendor }}</p>{%- endif -%}
+            {%- assign p_label = product.type | default: product.vendor -%}
+            {%- if p_label != blank -%}<p class="p-card__vendor">{{ p_label }}</p>{%- endif -%}
             <a href="{{ product.url }}" class="p-card__title">{{ product.title }}</a>
             <div class="p-card__price">
               <span class="p-card__price-now">{{ product.price | money }}</span>
