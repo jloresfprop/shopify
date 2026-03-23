@@ -93,9 +93,16 @@
         {%- endfor -%}
       {%- endunless -%}
 
-      <button type="submit" class="product-page__btn">
-        Agregar al carrito
-      </button>
+      {%- assign _total_stock = 0 -%}
+      {%- for _v in product.variants -%}
+        {%- assign _total_stock = _total_stock | plus: _v.inventory_quantity -%}
+      {%- endfor -%}
+
+      {%- if _total_stock > 0 -%}
+        <button type="submit" class="product-page__btn">Agregar al carrito</button>
+      {%- else -%}
+        <button type="button" class="product-page__btn" disabled>Agotado</button>
+      {%- endif -%}
     {%- endform -%}
 
     {%- if product.description != blank -%}
