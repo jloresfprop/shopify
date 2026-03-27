@@ -1471,9 +1471,20 @@ async function run() {
     console.log(`\n📦 ÓRDENES ML | ${now}`);
     console.log('━'.repeat(50));
     await logToSheet('INFO', 'Inicio Sync Órdenes', now);
+
     const token = await getMLToken();
-    await syncMLOrders(token);
-    await logToSheet('INFO', 'Fin Sync Órdenes', 'OK');
+
+    console.log('\n[1/2] Revisando órdenes ML → Shopify...');
+    const nuevas = await syncMLOrders(token);
+
+    console.log('\n[2/2] Google Sheets...');
+    if (nuevas > 0) {
+      console.log(`  ✅ ${nuevas} orden(es) nueva(s) registrada(s) en pestaña "Órdenes"`);
+    } else {
+      console.log('  📬 Sin órdenes nuevas — sheet sin cambios');
+    }
+
+    await logToSheet('INFO', 'Fin Sync Órdenes', `OK — ${nuevas} nueva(s)`);
     console.log('\n✅ Listo.');
     return;
   }
