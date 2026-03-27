@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const __dir = dirname(fileURLToPath(import.meta.url));
+const __dir         = dirname(fileURLToPath(import.meta.url));
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutos
 
 function loadEnv() {
@@ -15,12 +15,12 @@ function loadEnv() {
 }
 loadEnv();
 
-
 // ── Auto-Sync Loop ────────────────────────────────────────────────────────────
 function runSync() {
-  const proc = spawn('node', [resolve(__dir, 'auto-sync.js')], {
-    stdio: 'inherit',
-    shell: false
+  const args = [resolve(__dir, 'auto-sync.js')];
+  if (process.argv.includes('--no-images')) args.push('--no-images');
+  const proc = spawn('node', args, {
+    stdio: 'inherit', shell: false
   });
   proc.on('error', e => console.error('❌ sync error:', e.message));
 }

@@ -4,6 +4,12 @@
   "type": "module",
   "scripts": {
     "auth": "node scripts/get-token.js",
+    "ml:auth": "node scripts/ml-auth.js",
+    "dropi:login": "node scripts/dropi-login.js",
+    "dropi:scraper": "node scripts/dropi-scraper.js",
+    "dropi:upload": "node scripts/dropi-upload-images.js",
+    "dropi:sync": "node scripts/dropi-sync.js",
+    "dropi:sync:dry": "node scripts/dropi-sync.js --dry-run",
     "sync": "node scripts/sync-dropify.js",
     "sync:dry": "node scripts/sync-dropify.js --dry-run",
     "ml:dry": "node scripts/publish-mercadolibre.js --dry-run",
@@ -11,14 +17,19 @@
     "ml:bridge:dry": "node scripts/ml-orders-bridge.js --dry-run",
     "ml:bridge": "node scripts/ml-orders-bridge.js",
     "auto-sync": "node scripts/auto-sync.js",
+    "auto-sync:no-images": "node scripts/auto-sync.js --no-images",
+    "orders": "node scripts/auto-sync.js --orders-only",
     "start": "node scripts/start.js",
+    "start:no-images": "node scripts/start.js --no-images",
     "dev": "node scripts/dev.js",
     "theme:push": "shopify theme push --theme 133827002465 --store el-estante-cl.myshopify.com --allow-live"
   },
   "devDependencies": {
+    "playwright": "^1.58.2",
     "sharp": "^0.34.5"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "googleapis": "^171.4.0"
   }
 }
