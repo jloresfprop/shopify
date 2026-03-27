@@ -19,6 +19,7 @@
     "auto-sync": "node scripts/auto-sync.js",
     "auto-sync:no-images": "node scripts/auto-sync.js --no-images",
     "orders": "node scripts/auto-sync.js --orders-only",
+    "start:orders": "node scripts/start.js --orders-only",
     "start": "node scripts/start.js",
     "start:no-images": "node scripts/start.js --no-images",
     "dev": "node scripts/dev.js",

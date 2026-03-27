@@ -15,10 +15,14 @@ function loadEnv() {
 }
 loadEnv();
 
+const ordersOnly = process.argv.includes('--orders-only');
+const noImages   = process.argv.includes('--no-images');
+
 // ── Auto-Sync Loop ────────────────────────────────────────────────────────────
 function runSync() {
   const args = [resolve(__dir, 'auto-sync.js')];
-  if (process.argv.includes('--no-images')) args.push('--no-images');
+  if (ordersOnly) args.push('--orders-only');
+  if (noImages)   args.push('--no-images');
   const proc = spawn('node', args, {
     stdio: 'inherit', shell: false
   });
@@ -26,7 +30,8 @@ function runSync() {
 }
 
 // ── Arranque ──────────────────────────────────────────────────────────────────
-console.log('🚀 El Estante CL — Servidor completo');
+const modo = ordersOnly ? 'Solo órdenes ML' : noImages ? 'Sin imágenes' : 'Completo';
+console.log('🚀 El Estante CL — ' + modo);
 console.log('━'.repeat(50));
 console.log(`⏱  Auto-sync cada ${SYNC_INTERVAL / 60000} minutos`);
 console.log('━'.repeat(50) + '\n');
