@@ -933,10 +933,14 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
           const catAttrs = await attrsRes.json();
           extraAttrs = (catAttrs || [])
             .filter(a => a.tags?.required || a.tags?.catalog_required)
-            .map(a => ({
-              id: a.id,
-              value_name: a.values?.[0]?.name || p.title.slice(0, 60)
-            }));
+            .flatMap(a => {
+              // Atributo con valores predefinidos → usar el primero
+              if (a.values?.[0]) return [{ id: a.id, value_name: a.values[0].name }];
+              // Atributo numérico (number_unit, number) → no mandar valor inventado, omitir
+              if (a.value_type === 'number_unit' || a.value_type === 'number') return [];
+              // Atributo de texto libre → usar título
+              return [{ id: a.id, value_name: p.title.slice(0, 60) }];
+            });
         }
 
         // Combinar atributos base + extras de IA/fallback (sin duplicar)
