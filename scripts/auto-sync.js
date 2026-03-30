@@ -51,6 +51,19 @@ const AI_PRICING = {
 // Acumulador de uso IA por ciclo de sync
 const aiRunUsage = { input: 0, output: 0, costUsd: 0 };
 
+// Flag global: si la IA falla por créditos, se desactiva para el resto del sync
+let aiDisabled = false;
+function checkAICreditsError(e) {
+  if (e.message?.includes('credit balance is too low') || e.status === 400 && e.message?.includes('credit')) {
+    if (!aiDisabled) {
+      aiDisabled = true;
+      console.log('  ⚠️  Sin créditos Anthropic — IA desactivada para este ciclo, usando lógica estándar');
+    }
+    return true;
+  }
+  return false;
+}
+
 function loadMapping() {
   if (existsSync(MAPPING_FILE)) return JSON.parse(readFileSync(MAPPING_FILE, 'utf8'));
   return {};
@@ -517,7 +530,7 @@ async function syncShopifyStock(products, dropiMeta) {
 // Si no hay ANTHROPIC_API_KEY, retorna null y el sync usa la lógica de fallback.
 async function aiResolveMLPublish(product, candidates, token) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || aiDisabled) return null;
 
   try {
     const client = new Anthropic({ apiKey });
@@ -590,7 +603,7 @@ Responde SOLO con JSON (sin explicaciones):
     console.log(`  🤖 IA eligió: [${idx}] ${chosen.category_name} (${chosen.category_id})`);
     return { categoryId: chosen.category_id, attributes: result.attributes || [] };
   } catch (e) {
-    console.log(`  ⚠️  IA error: ${e.message} — usando lógica de fallback`);
+    if (!checkAICreditsError(e)) console.log(`  ⚠️  IA error: ${e.message} — usando lógica de fallback`);
     return null;
   }
 }
@@ -690,7 +703,7 @@ async function getMLPriceData(title, basePrice, token) {
 // Solo se llama la primera vez que se publica un producto (sin mlId).
 async function aiResearchFirstTimePrice(product, basePrice, token) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return getMLPriceData(product.title, basePrice, token);
+  if (!apiKey || aiDisabled) return getMLPriceData(product.title, basePrice, token);
 
   const client  = new Anthropic({ apiKey });
   const minML   = mlMinPrice(basePrice);
@@ -773,7 +786,7 @@ Responde SOLO con JSON (sin texto adicional):
     return { mlPrice, median: null };
 
   } catch (e) {
-    console.log(`  ⚠️  IA pricing error: ${e.message} — usando precio estándar`);
+    if (!checkAICreditsError(e)) console.log(`  ⚠️  IA pricing error: ${e.message} — usando precio estándar`);
     return getMLPriceData(product.title, basePrice, token);
   }
 }
