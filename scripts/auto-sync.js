@@ -955,8 +955,10 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
           console.log(`  🆕 ML nuevo: ${p.title} → ${item.id} | $${mlPrice.toLocaleString('es-CL')} | ${p.images.length} fotos`);
           await logToSheet('INFO', 'ML Nuevo', `${p.title} → ${item.id} | $${mlPrice.toLocaleString('es-CL')} | ${p.images.length} fotos`);
         } else {
-          console.log(`  ❌ ML rechazó: ${p.title} — ${item.message || item.error || JSON.stringify(item).slice(0,80)}`);
-          await logToSheet('ERROR', 'ML Rechazado', `${p.title}: ${item.message || item.error || ''}`);
+          const mlErrDetail = item.cause?.map(c => `${c.code}: ${c.message}`).join(' | ') || item.message || item.error || '';
+          console.log(`  ❌ ML rechazó: ${p.title} — ${mlErrDetail}`);
+          console.log(`     Detalle ML: ${JSON.stringify(item).slice(0, 300)}`);
+          await logToSheet('ERROR', 'ML Rechazado', `${p.title}: ${mlErrDetail}`);
         }
       } catch (e) {
         console.log(`  ❌ Error publicando ${p.title}: ${e.message}`);
