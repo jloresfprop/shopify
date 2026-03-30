@@ -936,8 +936,15 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
             .flatMap(a => {
               // Atributo con valores predefinidos → usar el primero
               if (a.values?.[0]) return [{ id: a.id, value_name: a.values[0].name }];
-              // Atributo numérico (number_unit, number) → no mandar valor inventado, omitir
-              if (a.value_type === 'number_unit' || a.value_type === 'number') return [];
+              // Atributo numérico → intentar extraer del título, sino usar default por unidad
+              if (a.value_type === 'number_unit' || a.value_type === 'number') {
+                const units = (a.allowed_units || []).map(u => u.id).join('|') || 'mL|L|ml|l|oz|cc|g|kg|W|V|cm|mm|m';
+                const match = p.title.match(new RegExp(`(\\d+[\\.,]?\\d*)\\s*(${units})`, 'i'));
+                if (match) return [{ id: a.id, value_name: `${match[1]} ${match[2]}` }];
+                // Default razonable por unidad más común del atributo
+                const defaultUnit = a.allowed_units?.[0]?.id || 'mL';
+                return [{ id: a.id, value_name: `500 ${defaultUnit}` }];
+              }
               // Atributo de texto libre → usar título
               return [{ id: a.id, value_name: p.title.slice(0, 60) }];
             });
