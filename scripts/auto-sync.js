@@ -919,14 +919,18 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
           );
           const catAttrs = await attrsRes.json();
           extraAttrs = (catAttrs || [])
-            .filter(a => (a.tags?.required || a.tags?.catalog_required) && a.values?.[0])
-            .map(a => ({ id: a.id, value_name: a.values[0].name }));
+            .filter(a => a.tags?.required || a.tags?.catalog_required)
+            .map(a => ({
+              id: a.id,
+              value_name: a.values?.[0]?.name || p.title.slice(0, 60)
+            }));
         }
 
         // Combinar atributos base + extras de IA/fallback (sin duplicar)
         const baseAttrs = [
           { id: 'BRAND',       value_name: p.vendor || 'Genérico' },
           { id: 'PART_NUMBER', value_name: sku },
+          { id: 'MODEL',       value_name: p.title.slice(0, 60) },
         ];
         const baseIds = new Set(baseAttrs.map(a => a.id));
         const allAttrs = [...baseAttrs, ...(extraAttrs || []).filter(a => !baseIds.has(a.id))];
