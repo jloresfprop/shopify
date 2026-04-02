@@ -853,29 +853,37 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
       continue;
     }
 
-    // Precio ML: para productos nuevos usa IA (visión + análisis competidores)
-    // Para productos ya publicados usa búsqueda estándar por título
-    // Base de costo = dropiCost si está disponible, sino currentWeb como fallback
+    // Precio ML: solo buscar competencia para productos nuevos (sin mlId) o con precio placeholder
+    // Para productos ya publicados con precio válido → mantener precio actual
+    const esPlaceholder = currentWeb < MIN_VALID_PRICE;
     const costBase = dropiCost > 0 ? dropiCost : currentWeb;
-    const { mlPrice, median } = mlId
-      ? await getMLPriceData(p.title, costBase, token)
-      : await aiResearchFirstTimePrice(p, costBase, token);
 
-    // Precio web = precio competitivo de mercado
-    // Piso absoluto: costo Dropi. Si hay precio actual válido, no bajar más del 20%.
+    let mlPrice, median;
+    if (!mlId || esPlaceholder) {
+      // Producto nuevo o sin precio → investigar competencia
+      ({ mlPrice, median } = await aiResearchFirstTimePrice(p, costBase, token));
+    } else {
+      // Ya publicado con precio válido → usar precio actual como base, no buscar competencia
+      mlPrice = attractivePrice(Math.max(currentWeb, mlMinPrice(costBase)));
+      median  = null;
+    }
+
+    // Precio web: solo cambiar si es placeholder o si la diferencia supera el 15%
     const floorByHistory = currentWeb >= MIN_VALID_PRICE ? Math.round(currentWeb * 0.8) : 0;
-    const minWeb = Math.max(dropiCost, floorByHistory);
-    const newWeb = Math.max(mlPrice, minWeb);
-    const competMsg = median ? ` (competencia mediana: $${median.toLocaleString('es-CL')})` : '';
+    const minWeb  = Math.max(dropiCost, floorByHistory);
+    const newWeb  = Math.max(mlPrice, minWeb);
+    const diffPct = currentWeb >= MIN_VALID_PRICE ? Math.abs(newWeb - currentWeb) / currentWeb : 1;
+    const competMsg = median ? ` (competencia: $${median.toLocaleString('es-CL')})` : '';
 
-    if (newWeb !== currentWeb && p.variants[0]?.id) {
+    if (p.variants[0]?.id && (esPlaceholder || diffPct >= 0.15) && newWeb !== currentWeb) {
       await fetch(`https://${SHOPIFY_STORE}/admin/api/2024-10/variants/${p.variants[0].id}.json`, {
         method: 'PUT', headers: SHOPIFY_HEADS,
         body: JSON.stringify({ variant: { id: p.variants[0].id, price: String(newWeb) } })
       });
       webUpdated++;
-      console.log(`  💲 Web: ${p.title} $${currentWeb.toLocaleString('es-CL')} → $${newWeb.toLocaleString('es-CL')}${competMsg}`);
-      await logToSheet('INFO', 'Precio web', `${p.title}: $${currentWeb.toLocaleString('es-CL')} → $${newWeb.toLocaleString('es-CL')}${competMsg}`);
+      const razon = esPlaceholder ? ' (era placeholder)' : ` (cambio ${Math.round(diffPct * 100)}%)`;
+      console.log(`  💲 Web: ${p.title} $${currentWeb.toLocaleString('es-CL')} → $${newWeb.toLocaleString('es-CL')}${competMsg}${razon}`);
+      await logToSheet('INFO', 'Precio web', `${p.title}: $${currentWeb.toLocaleString('es-CL')} → $${newWeb.toLocaleString('es-CL')}${razon}`);
     }
 
     // Actualizar ML si ya estaba publicado
@@ -883,11 +891,15 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
       const lastStock = getMlStock(mapping[pid]);
       const stockChanged = lastStock !== null && lastStock !== stock;
 
-      // Stock siempre se sincroniza sin excepción
+      // Stock siempre se sincroniza. Precio ML solo si cambió más del 15% o era placeholder
+      const mlPriceActual = getMlPrice(mapping[pid]) || 0;
+      const mlDiffPct = mlPriceActual > 0 ? Math.abs(mlPrice - mlPriceActual) / mlPriceActual : 1;
+      const updateMlPrice = esPlaceholder || mlDiffPct >= 0.15;
+
       await fetch(`https://api.mercadolibre.com/items/${mlId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ available_quantity: stock, price: mlPrice, status: 'active' })
+        body: JSON.stringify({ available_quantity: stock, ...(updateMlPrice && { price: mlPrice }), status: 'active' })
       });
 
       // Sincronizar fotos cuando Shopify tiene más imágenes de las que se enviaron a ML
