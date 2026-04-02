@@ -1,0 +1,66 @@
+name: Auto-Sync El Estante CL
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # cada 5 minutos
+  workflow_dispatch:          # también se puede ejecutar manualmente
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Crear .env
+        run: |
+          cat > .env << 'EOF'
+          SHOPIFY_STORE=${{ secrets.SHOPIFY_STORE }}
+          SHOPIFY_TOKEN=${{ secrets.SHOPIFY_TOKEN }}
+          SHOPIFY_API_KEY=${{ secrets.SHOPIFY_API_KEY }}
+          SHOPIFY_API_SECRET=${{ secrets.SHOPIFY_API_SECRET }}
+          SCOPES=${{ secrets.SCOPES }}
+          ML_CLIENT_ID=${{ secrets.ML_CLIENT_ID }}
+          ML_CLIENT_SECRET=${{ secrets.ML_CLIENT_SECRET }}
+          ML_SITE_ID=${{ secrets.ML_SITE_ID }}
+          ML_USER_ID=${{ secrets.ML_USER_ID }}
+          ML_USER_TOKEN=${{ secrets.ML_USER_TOKEN }}
+          ML_REFRESH_TOKEN=${{ secrets.ML_REFRESH_TOKEN }}
+          ML_TOKEN_EXPIRES_AT=${{ secrets.ML_TOKEN_EXPIRES_AT }}
+          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          DROPI_TOKEN=${{ secrets.DROPI_TOKEN }}
+          DROPI_STORE_ID=${{ secrets.DROPI_STORE_ID }}
+          DROPI_USER_TOKEN=${{ secrets.DROPI_USER_TOKEN }}
+          DROPI_EMAIL=${{ secrets.DROPI_EMAIL }}
+          DROPI_PASSWORD=${{ secrets.DROPI_PASSWORD }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          AI_MONTHLY_BUDGET_USD=${{ secrets.AI_MONTHLY_BUDGET_USD }}
+          EOF
+
+      - name: Crear credenciales Google
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > el-estante-cl.json
+
+      - name: Ejecutar sync
+        run: node scripts/auto-sync.js --no-images
+
+      - name: Guardar estado (mapping + órdenes)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ml-mapping.json ml-images-cache.json || true
+          if [ -f ml-processed-orders.json ]; then git add ml-processed-orders.json; fi
+          git diff --staged --quiet || git commit -m "chore: estado sync $(date -u '+%Y-%m-%d %H:%M')"
+          git push
