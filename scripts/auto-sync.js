@@ -853,24 +853,34 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
       continue;
     }
 
-    // Precio ML: siempre buscar competencia para mantenerse competitivo
+    // ── Lógica de precios ──────────────────────────────────────────────────────
+    // Flujo: dropiCost → webPrice (costo + margen) → mlPrice (web + comisión ML)
     const esPlaceholder = currentWeb < MIN_VALID_PRICE;
-    const costBase = dropiCost > 0 ? dropiCost : currentWeb;
+    const WEB_MARGIN    = parseFloat(process.env.WEB_MARGIN || '0.30'); // 30% margen mínimo
 
-    let mlPrice, median;
-    if (!mlId || esPlaceholder) {
-      ({ mlPrice, median } = await aiResearchFirstTimePrice(p, costBase, token));
-    } else {
-      ({ mlPrice, median } = await getMLPriceData(p.title, costBase, token));
-    }
+    // Obtener mediana de competencia en ML (referencia de precio de mercado)
+    const { median } = await getMLPriceData(p.title, dropiCost || currentWeb, token);
 
-    // Precio web Shopify: solo cambiar si es placeholder o si la diferencia supera el 15%
-    const floorByHistory = currentWeb >= MIN_VALID_PRICE ? Math.round(currentWeb * 0.8) : 0;
-    const minWeb  = Math.max(dropiCost, floorByHistory);
-    const newWeb  = Math.max(mlPrice, minWeb);
+    // PASO 1: Precio web
+    // Piso = dropiCost + margen mínimo (garantiza ganancia)
+    const minWebFromCost  = dropiCost > 0 ? Math.round(dropiCost * (1 + WEB_MARGIN)) : 0;
+    const floorByHistory  = currentWeb >= MIN_VALID_PRICE ? Math.round(currentWeb * 0.8) : 0;
+    const minWeb          = Math.max(minWebFromCost, floorByHistory, dropiCost);
+    // Referencia de mercado: mediana ML * 0.90 (10% bajo mercado para ser competitivo en web)
+    const webFromMarket   = median ? Math.round(median * 0.90) : 0;
+    const newWeb          = attractivePrice(Math.max(minWeb, webFromMarket || minWeb));
+
+    // PASO 2: Precio ML (deriva del webPrice, no del costo directamente)
+    // Mínimo para cubrir comisión ML sobre el precio web
+    const mlMinFromWeb    = mlMinPrice(newWeb);
+    // Competitivo en ML: 5% bajo mediana, pero nunca bajo el mínimo
+    const mlFromMarket    = median ? attractivePrice(Math.round(median * 0.95)) : mlMinFromWeb;
+    const mlPrice         = Math.max(mlMinFromWeb, mlFromMarket);
+
+    const competMsg = median ? ` (mercado ML: $${median.toLocaleString('es-CL')})` : '';
+
+    // Actualizar Shopify web: solo si es placeholder o cambio ≥15%
     const diffPct = currentWeb >= MIN_VALID_PRICE ? Math.abs(newWeb - currentWeb) / currentWeb : 1;
-    const competMsg = median ? ` (competencia: $${median.toLocaleString('es-CL')})` : '';
-
     if (p.variants[0]?.id && (esPlaceholder || diffPct >= 0.15) && newWeb !== currentWeb) {
       await fetch(`https://${SHOPIFY_STORE}/admin/api/2024-10/variants/${p.variants[0].id}.json`, {
         method: 'PUT', headers: SHOPIFY_HEADS,
@@ -882,7 +892,7 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
       await logToSheet('INFO', 'Precio web', `${p.title}: $${currentWeb.toLocaleString('es-CL')} → $${newWeb.toLocaleString('es-CL')}${razon}`);
     }
 
-    // Actualizar ML si ya estaba publicado — precio ML siempre actualizado con competencia
+    // Actualizar ML: precio siempre actualizado con competencia (fluctúa normalmente)
     if (mlId && !mlId.startsWith('DRY_')) {
       const lastStock = getMlStock(mapping[pid]);
       const stockChanged = lastStock !== null && lastStock !== stock;
