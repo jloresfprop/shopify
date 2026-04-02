@@ -38,6 +38,8 @@ jobs:
           ML_REFRESH_TOKEN=${{ secrets.ML_REFRESH_TOKEN }}
           ML_TOKEN_EXPIRES_AT=${{ secrets.ML_TOKEN_EXPIRES_AT }}
           GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
           EOF
 
       - name: Crear credenciales Google

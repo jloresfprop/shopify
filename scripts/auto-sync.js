@@ -43,6 +43,20 @@ const SHEET_ORDERS   = 'Órdenes';
 const SHEET_LOG      = 'Log';
 const SHEET_AI       = 'IA Uso';
 
+const TELEGRAM_TOKEN  = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT   = process.env.TELEGRAM_CHAT_ID;
+
+async function sendTelegram(msg) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
+    });
+  } catch (_) {}
+}
+
 const AI_PRICING = {
   'claude-haiku-4-5':  { input: 1.00 / 1_000_000, output:  5.00 / 1_000_000 },
   'claude-sonnet-4-6': { input: 3.00 / 1_000_000, output: 15.00 / 1_000_000 }
@@ -1050,6 +1064,16 @@ async function syncMLOrders(token) {
       processed.add(String(order.id));
       saveProcessed(processed);
       console.log(`  📦 Orden ML #${order.id} → Shopify #${shopifyId}`);
+
+      // Notificación Telegram
+      const itemsText = lineItems.map(i => `• ${i.title} x${i.quantity} — $${i.price?.toLocaleString('es-CL')}`).join('\n');
+      await sendTelegram(
+        `Nueva orden de MercadoLibre\n\n` +
+        `Cliente: ${shippingAddress.first_name} ${shippingAddress.last_name}\n` +
+        `Total: $${detail.total_amount?.toLocaleString('es-CL')}\n\n` +
+        `${itemsText}\n\n` +
+        `ML #${order.id} → Shopify #${shopifyId}`
+      );
 
       // Registrar orden en Google Sheets
       const now = new Date().toLocaleString('es-CL');
