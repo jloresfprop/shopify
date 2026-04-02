@@ -1,14 +1,14 @@
-name: Sync Completo (cada 6h)
+name: Órdenes ML (cada 30min)
 
 on:
   schedule:
-    - cron: '0 */6 * * *'   # cada 6 horas
+    - cron: '*/30 * * * *'  # cada 30 minutos
   workflow_dispatch:
 
 jobs:
-  sync:
+  orders:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
 
     steps:
       - name: Checkout repo
@@ -30,9 +30,6 @@ jobs:
           cat > .env << 'EOF'
           SHOPIFY_STORE=${{ secrets.SHOPIFY_STORE }}
           SHOPIFY_TOKEN=${{ secrets.SHOPIFY_TOKEN }}
-          SHOPIFY_API_KEY=${{ secrets.SHOPIFY_API_KEY }}
-          SHOPIFY_API_SECRET=${{ secrets.SHOPIFY_API_SECRET }}
-          SCOPES=${{ secrets.SCOPES }}
           ML_CLIENT_ID=${{ secrets.ML_CLIENT_ID }}
           ML_CLIENT_SECRET=${{ secrets.ML_CLIENT_SECRET }}
           ML_SITE_ID=${{ secrets.ML_SITE_ID }}
@@ -41,26 +38,18 @@ jobs:
           ML_REFRESH_TOKEN=${{ secrets.ML_REFRESH_TOKEN }}
           ML_TOKEN_EXPIRES_AT=${{ secrets.ML_TOKEN_EXPIRES_AT }}
           GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
-          DROPI_TOKEN=${{ secrets.DROPI_TOKEN }}
-          DROPI_STORE_ID=${{ secrets.DROPI_STORE_ID }}
-          DROPI_USER_TOKEN=${{ secrets.DROPI_USER_TOKEN }}
-          DROPI_EMAIL=${{ secrets.DROPI_EMAIL }}
-          DROPI_PASSWORD=${{ secrets.DROPI_PASSWORD }}
-          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-          AI_MONTHLY_BUDGET_USD=${{ secrets.AI_MONTHLY_BUDGET_USD }}
           EOF
 
       - name: Crear credenciales Google
         run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > el-estante-cl.json
 
-      - name: Ejecutar sync completo
-        run: node scripts/auto-sync.js --no-images
+      - name: Revisar órdenes ML
+        run: node scripts/auto-sync.js --orders-only
 
-      - name: Guardar estado
+      - name: Guardar órdenes procesadas
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ml-mapping.json ml-images-cache.json 2>/dev/null || true
           [ -f ml-processed-orders.json ] && git add ml-processed-orders.json || true
-          git diff --staged --quiet || git commit -m "chore: estado sync $(date -u '+%Y-%m-%d %H:%M')"
+          git diff --staged --quiet || git commit -m "chore: órdenes $(date -u '+%Y-%m-%d %H:%M')"
           git push
