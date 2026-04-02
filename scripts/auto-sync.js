@@ -853,22 +853,18 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
       continue;
     }
 
-    // Precio ML: solo buscar competencia para productos nuevos (sin mlId) o con precio placeholder
-    // Para productos ya publicados con precio válido → mantener precio actual
+    // Precio ML: siempre buscar competencia para mantenerse competitivo
     const esPlaceholder = currentWeb < MIN_VALID_PRICE;
     const costBase = dropiCost > 0 ? dropiCost : currentWeb;
 
     let mlPrice, median;
     if (!mlId || esPlaceholder) {
-      // Producto nuevo o sin precio → investigar competencia
       ({ mlPrice, median } = await aiResearchFirstTimePrice(p, costBase, token));
     } else {
-      // Ya publicado con precio válido → usar precio actual como base, no buscar competencia
-      mlPrice = attractivePrice(Math.max(currentWeb, mlMinPrice(costBase)));
-      median  = null;
+      ({ mlPrice, median } = await getMLPriceData(p.title, costBase, token));
     }
 
-    // Precio web: solo cambiar si es placeholder o si la diferencia supera el 15%
+    // Precio web Shopify: solo cambiar si es placeholder o si la diferencia supera el 15%
     const floorByHistory = currentWeb >= MIN_VALID_PRICE ? Math.round(currentWeb * 0.8) : 0;
     const minWeb  = Math.max(dropiCost, floorByHistory);
     const newWeb  = Math.max(mlPrice, minWeb);
@@ -886,20 +882,15 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
       await logToSheet('INFO', 'Precio web', `${p.title}: $${currentWeb.toLocaleString('es-CL')} → $${newWeb.toLocaleString('es-CL')}${razon}`);
     }
 
-    // Actualizar ML si ya estaba publicado
+    // Actualizar ML si ya estaba publicado — precio ML siempre actualizado con competencia
     if (mlId && !mlId.startsWith('DRY_')) {
       const lastStock = getMlStock(mapping[pid]);
       const stockChanged = lastStock !== null && lastStock !== stock;
 
-      // Stock siempre se sincroniza. Precio ML solo si cambió más del 15% o era placeholder
-      const mlPriceActual = getMlPrice(mapping[pid]) || 0;
-      const mlDiffPct = mlPriceActual > 0 ? Math.abs(mlPrice - mlPriceActual) / mlPriceActual : 1;
-      const updateMlPrice = esPlaceholder || mlDiffPct >= 0.15;
-
       await fetch(`https://api.mercadolibre.com/items/${mlId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ available_quantity: stock, ...(updateMlPrice && { price: mlPrice }), status: 'active' })
+        body: JSON.stringify({ available_quantity: stock, price: mlPrice, status: 'active' })
       });
 
       // Sincronizar fotos cuando Shopify tiene más imágenes de las que se enviaron a ML
