@@ -12,9 +12,8 @@
     <title>{{ shop.name }}</title>
   {%- endif -%}
 
-  {%- if settings.favicon != blank -%}
-    <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
-  {%- endif -%}
+  <link rel="icon" type="image/png" href="{{ 'logo.png' | asset_url }}">
+  <link rel="shortcut icon" type="image/png" href="{{ 'logo.png' | asset_url }}">
 
   {%- if page_description -%}
     <meta name="description" content="{{ page_description | escape }}">
