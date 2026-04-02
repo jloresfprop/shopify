@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { resolve as resolvePath, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dir         = dirname(fileURLToPath(import.meta.url));
@@ -20,26 +20,32 @@ const noImages   = process.argv.includes('--no-images');
 
 // ── Auto-Sync Loop ────────────────────────────────────────────────────────────
 function runSync() {
-  const args = [resolve(__dir, 'auto-sync.js')];
-  if (ordersOnly) args.push('--orders-only');
-  if (noImages)   args.push('--no-images');
-  const proc = spawn('node', args, {
-    stdio: 'inherit', shell: false
+  return new Promise(done => {
+    const args = [resolvePath(__dir, 'auto-sync.js')];
+    if (ordersOnly) args.push('--orders-only');
+    if (noImages)   args.push('--no-images');
+    const proc = spawn('node', args, { stdio: 'inherit', shell: false });
+    proc.on('error', e => { console.error('❌ sync error:', e.message); done(); });
+    proc.on('close', () => done());
   });
-  proc.on('error', e => console.error('❌ sync error:', e.message));
+}
+
+async function loop() {
+  while (true) {
+    await runSync();
+    console.log(`\n⏳ Esperando ${SYNC_INTERVAL / 60000} min para el siguiente sync...`);
+    await new Promise(r => setTimeout(r, SYNC_INTERVAL));
+  }
 }
 
 // ── Arranque ──────────────────────────────────────────────────────────────────
 const modo = ordersOnly ? 'Solo órdenes ML' : noImages ? 'Sin imágenes' : 'Completo';
 console.log('🚀 El Estante CL — ' + modo);
 console.log('━'.repeat(50));
-console.log(`⏱  Auto-sync cada ${SYNC_INTERVAL / 60000} minutos`);
+console.log(`⏱  Auto-sync cada ${SYNC_INTERVAL / 60000} min (espera a que termine antes de reiniciar)`);
 console.log('━'.repeat(50) + '\n');
 
-setTimeout(() => {
-  runSync();
-  setInterval(runSync, SYNC_INTERVAL);
-}, 10_000);
+setTimeout(() => loop(), 10_000);
 
 process.on('SIGINT', () => {
   console.log('\n👋 Cerrando...');
