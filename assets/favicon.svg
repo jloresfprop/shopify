@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 64" fill="none">
+  <!-- Soportes verticales -->
+  <rect x="1"  y="2" width="2.5" height="58" rx="1.2" fill="#C9A84C"/>
+  <rect x="42" y="2" width="2.5" height="58" rx="1.2" fill="#C9A84C"/>
+  <!-- Estante superior -->
+  <rect x="1" y="2"  width="44" height="2.5" rx="1.2" fill="#C9A84C"/>
+  <!-- Estante medio -->
+  <rect x="1" y="32" width="44" height="2.5" rx="1.2" fill="#C9A84C"/>
+  <!-- Estante inferior -->
+  <rect x="1" y="60" width="44" height="2.5" rx="1.2" fill="#C9A84C"/>
+  <!-- Nivel superior: cajas -->
+  <rect x="5"  y="6"  width="10" height="24" rx="1.5" fill="#C9A84C"/>
+  <rect x="5"  y="6"  width="10" height="5"  rx="1.5" fill="#a87828"/>
+  <rect x="17" y="9"  width="8"  height="21" rx="1.5" fill="#C9A84C" opacity=".8"/>
+  <rect x="17" y="9"  width="8"  height="4"  rx="1.5" fill="#a87828" opacity=".8"/>
+  <rect x="27" y="7"  width="11" height="23" rx="1.5" fill="#C9A84C" opacity=".65"/>
+  <rect x="27" y="7"  width="11" height="5"  rx="1.5" fill="#a87828" opacity=".65"/>
+  <!-- Nivel inferior: cajas -->
+  <rect x="5"  y="36" width="9"  height="22" rx="1.5" fill="#C9A84C" opacity=".7"/>
+  <rect x="5"  y="36" width="9"  height="4"  rx="1.5" fill="#a87828" opacity=".7"/>
+  <rect x="16" y="38" width="12" height="20" rx="1.5" fill="#C9A84C"/>
+  <rect x="16" y="38" width="12" height="5"  rx="1.5" fill="#a87828"/>
+  <rect x="30" y="36" width="9"  height="22" rx="1.5" fill="#C9A84C" opacity=".75"/>
+  <rect x="30" y="36" width="9"  height="5"  rx="1.5" fill="#a87828" opacity=".75"/>
+</svg>
