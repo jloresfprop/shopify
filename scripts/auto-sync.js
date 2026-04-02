@@ -669,13 +669,10 @@ async function syncMlPictures(mlId, shopifyImages, token) {
   const data = await res.json();
   const currentPics = data.pictures || []; // [{ id, url, secure_url }]
 
-  // Fotos existentes por ID + nuevas de Shopify por source URL
-  // ML re-hostea las imágenes, así que no se puede comparar por filename —
-  // simplemente enviamos las de Shopify como nuevas fuentes; ML descarta duplicados
-  const pictures = [
-    ...currentPics.map(p => ({ id: p.id })),
-    ...shopifyImages.map(i => ({ source: i.src }))
-  ];
+  // Fotos existentes por ID + nuevas de Shopify por source URL, máximo 12 (límite ML)
+  const existing = currentPics.map(p => ({ id: p.id }));
+  const nuevas   = shopifyImages.map(i => ({ source: i.src }));
+  const pictures = [...existing, ...nuevas].slice(0, 12);
 
   const putRes = await fetch(`https://api.mercadolibre.com/items/${mlId}`, {
     method: 'PUT',
