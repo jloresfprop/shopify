@@ -1297,60 +1297,34 @@ async function aiSearchAndUploadImages(product, token) {
     }
   } catch { }
 
-  // Paso 2b: imágenes desde Google/web usando Claude con web_search
+  // Paso 2b: imágenes desde DuckDuckGo (gratis, sin API key)
   const webUrls = [];
   try {
-    const wsMessages = [{
-      role: 'user',
-      content: `Busca imágenes de este producto exacto: "${searchQuery}".
+    const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36';
+    const q  = encodeURIComponent(searchQuery.slice(0, 80));
 
-Instrucciones:
-- Usa esa descripción visual completa para buscar en Google Images, AliExpress, Amazon o tiendas
-- Entra a páginas de producto que coincidan visualmente y extrae URLs directas de imágenes
-- Solo incluye imágenes que sean claramente del mismo producto (mismo color, forma, modelo)
-- Fondo blanco o neutro es ideal
+    // 1) Obtener token vqd
+    const initRes = await fetch(`https://duckduckgo.com/?q=${q}&iax=images&ia=images`, {
+      headers: { 'User-Agent': ua }
+    });
+    const html = await initRes.text();
+    const vqd  = html.match(/vqd=['"]([^'"]{10,})['"]/)?.[1];
 
-Devuelve SOLO un JSON array con hasta 6 URLs directas de imágenes (.jpg .jpeg .png .webp):
-["https://...", "https://..."]
-
-Si no encuentras imágenes del producto exacto, devuelve: []`
-    }];
-
-    let wsRes;
-    const wsUsage = { input_tokens: 0, output_tokens: 0 };
-    do {
-      wsRes = await client.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1500,
-        tools: [
-          { type: 'web_search_20260209', name: 'web_search' },
-          { type: 'web_fetch_20260209',  name: 'web_fetch'  }
-        ],
-        messages: wsMessages
-      });
-      wsUsage.input_tokens  += wsRes.usage?.input_tokens  || 0;
-      wsUsage.output_tokens += wsRes.usage?.output_tokens || 0;
-      wsMessages.push({ role: 'assistant', content: wsRes.content });
-    } while (wsRes.stop_reason === 'pause_turn');
-    await logAITokens('aiSearchAndUploadImages:webSearch', 'claude-sonnet-4-6', wsUsage);
-
-    const txt = wsRes.content.find(b => b.type === 'text')?.text || '';
-    console.log(`  🌐 Web search respuesta: ${txt.slice(0, 200)}`);
-    const m = txt.match(/\[[\s\S]*\]/);  // greedy — captura el array completo
-    if (m) {
-      try {
-        const urls = JSON.parse(m[0]);
-        // Aceptar cualquier URL https — no exigir extensión de imagen
-        webUrls.push(...urls.filter(u => typeof u === 'string' && u.startsWith('https')));
-      } catch { }
+    if (vqd) {
+      // 2) Buscar imágenes
+      const imgRes = await fetch(
+        `https://duckduckgo.com/i.js?q=${q}&vqd=${encodeURIComponent(vqd)}&o=json&p=1&f=,,,,,`,
+        { headers: { 'User-Agent': ua, 'Referer': 'https://duckduckgo.com/' } }
+      );
+      const imgData = await imgRes.json();
+      const found = (imgData.results || []).slice(0, 8).map(r => r.image).filter(u => u?.startsWith('https'));
+      webUrls.push(...found);
+      console.log(`  🌐 DuckDuckGo: ${found.length} imágenes encontradas`);
+    } else {
+      console.log(`  ⚠️  DuckDuckGo: no se obtuvo token vqd`);
     }
   } catch (e) {
-    const msg = e.message || '';
-    if (msg.includes('credit balance is too low')) {
-      console.log(`  ⚠️  Sin créditos API — web search desactivado, usando solo ML`);
-    } else {
-      console.log(`  ⚠️  Web search error: ${msg.slice(0, 150)}`);
-    }
+    console.log(`  ⚠️  DuckDuckGo error: ${e.message.slice(0, 100)}`);
   }
 
   console.log(`  📋 ML:${mlUrls.length} web:${webUrls.length}`);
