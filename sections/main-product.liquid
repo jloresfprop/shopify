@@ -14,7 +14,18 @@
   .product-page__gallery img { width: 100%; border-radius: 4px; }
   .product-page__thumbs { display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap; }
   .product-page__thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid transparent; }
-  .product-page__thumbs img:hover { border-color: #1a1a1a; }
+  .product-page__thumbs img:hover, .product-page__thumbs img.active { border-color: #C9A84C; }
+  .gallery-wrap { position: relative; }
+  .gallery-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,.85); border: none; border-radius: 50%;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    transition: background .2s;
+  }
+  .gallery-arrow:hover { background: #fff; }
+  .gallery-arrow--prev { left: 10px; }
+  .gallery-arrow--next { right: 10px; }
   .product-page__info h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 .75rem; }
   .product-page__price { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; }
   .product-page__price s { font-weight: 400; opacity: .5; font-size: 1rem; margin-left: .5rem; }
@@ -41,26 +52,58 @@
 
 <div class="product-page" itemscope itemtype="https://schema.org/Product">
   <div class="product-page__gallery">
-    {%- if product.featured_image -%}
-      <img id="main-product-image"
-        src="{{ product.featured_image | image_url: width: 800 }}"
-        alt="{{ product.featured_image.alt | escape }}"
-        width="800"
-        loading="eager"
-        itemprop="image">
-    {%- endif -%}
+    {%- assign images_json = '' -%}
+    {%- for image in product.images -%}
+      {%- assign images_json = images_json | append: '"' | append: image | image_url: width: 800 | append: '"' -%}
+      {%- unless forloop.last -%}{%- assign images_json = images_json | append: ',' -%}{%- endunless -%}
+    {%- endfor -%}
+
+    <div class="gallery-wrap" data-images="[{{ images_json }}]" id="gallery-wrap">
+      {%- if product.featured_image -%}
+        <img id="main-product-image"
+          src="{{ product.featured_image | image_url: width: 800 }}"
+          alt="{{ product.featured_image.alt | escape }}"
+          width="800" loading="eager" itemprop="image">
+      {%- endif -%}
+      {%- if product.images.size > 1 -%}
+        <button class="gallery-arrow gallery-arrow--prev" onclick="galleryMove(-1)" aria-label="Anterior">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="gallery-arrow gallery-arrow--next" onclick="galleryMove(1)" aria-label="Siguiente">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      {%- endif -%}
+    </div>
+
     {%- if product.images.size > 1 -%}
-      <div class="product-page__thumbs">
+      <div class="product-page__thumbs" id="gallery-thumbs">
         {%- for image in product.images -%}
           <img src="{{ image | image_url: width: 150 }}"
             alt="{{ image.alt | escape }}"
-            width="72" height="72"
-            loading="lazy"
-            onclick="document.getElementById('main-product-image').src='{{ image | image_url: width: 800 }}'">
+            width="72" height="72" loading="lazy"
+            class="{% if forloop.first %}active{% endif %}"
+            onclick="galleryGoTo({{ forloop.index0 }})">
         {%- endfor -%}
       </div>
     {%- endif -%}
   </div>
+
+  <script>
+    (function() {
+      const wrap   = document.getElementById('gallery-wrap');
+      const mainImg = document.getElementById('main-product-image');
+      const thumbs  = document.querySelectorAll('#gallery-thumbs img');
+      const images  = JSON.parse(wrap?.dataset.images || '[]');
+      let current   = 0;
+
+      window.galleryGoTo = function(idx) {
+        current = (idx + images.length) % images.length;
+        mainImg.src = images[current];
+        thumbs.forEach((t, i) => t.classList.toggle('active', i === current));
+      };
+      window.galleryMove = function(dir) { galleryGoTo(current + dir); };
+    })();
+  </script>
 
   <div class="product-page__info">
     <h1 itemprop="name">{{ product.title }}</h1>

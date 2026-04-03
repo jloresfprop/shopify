@@ -5,29 +5,35 @@
   {%- assign discount_pct = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price -%}
 {%- endif -%}
 
-<article class="product-card" itemscope itemtype="https://schema.org/Product">
-  <a href="{{ product.url }}" class="product-card__link" aria-label="{{ product.title | escape }}">
-    <div class="product-card__media">
-      {%- if product.featured_image -%}
-        {{ product.featured_image | image_url: width: 600
-          | image_tag:
-            class: 'product-card__img',
-            loading: 'lazy',
-            alt: product.featured_image.alt,
-            itemprop: 'image',
-            widths: '300, 400, 600',
-            sizes: '(max-width:480px) calc(50vw - 24px), (max-width:900px) calc(50vw - 32px), calc(25vw - 32px)' }}
+{%- assign card_images = '' -%}
+{%- for img in product.images limit: 6 -%}
+  {%- assign card_images = card_images | append: img | image_url: width: 600 -%}
+  {%- unless forloop.last -%}{%- assign card_images = card_images | append: '|' -%}{%- endunless -%}
+{%- endfor -%}
 
-        {%- if product.images[1] -%}
-          {{ product.images[1] | image_url: width: 600
-            | image_tag: class: 'product-card__img product-card__img--hover', loading: 'lazy', alt: product.title }}
-        {%- endif -%}
+<article class="product-card" itemscope itemtype="https://schema.org/Product">
+  <div class="product-card__link" aria-label="{{ product.title | escape }}">
+    <div class="product-card__media" data-card-images="{{ card_images }}">
+      {%- if product.featured_image -%}
+        <img class="product-card__img product-card__img--main"
+          src="{{ product.featured_image | image_url: width: 600 }}"
+          alt="{{ product.featured_image.alt | escape }}"
+          loading="lazy" itemprop="image">
       {%- else -%}
         <div style="width:100%;height:100%;background:#f0ece6;display:flex;align-items:center;justify-content:center;">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1">
             <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
           </svg>
         </div>
+      {%- endif -%}
+
+      {%- if product.images.size > 1 -%}
+        <button class="card-arrow card-arrow--prev" aria-label="Anterior">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="card-arrow card-arrow--next" aria-label="Siguiente">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       {%- endif -%}
 
       {%- if product.compare_at_price > product.price -%}
@@ -44,8 +50,7 @@
         + Agregar al carrito
       </button>
     </div>
-  </a>
-
+  </div>
   <div class="product-card__info">
     {%- assign p_label = product.type | default: product.vendor -%}
     {%- if p_label != blank -%}
@@ -53,7 +58,7 @@
     {%- endif -%}
 
     <h3 class="product-card__title" itemprop="name">
-      <a href="{{ product.url }}" style="text-decoration:none;">{{ product.title }}</a>
+      <a href="{{ product.url }}" style="text-decoration:none;color:inherit;">{{ product.title }}</a>
     </h3>
 
     <div class="product-card__price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
