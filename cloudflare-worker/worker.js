@@ -2,28 +2,30 @@
 // Permite llamar a la API de Dropi desde cualquier IP
 
 const DROPI_BASE = 'https://api.dropi.cl';
-
-// Clave secreta para que solo tu script pueda usar este worker
-// CAMBIA ESTE VALOR por algo aleatorio antes de desplegar
-const SECRET_KEY = 'el-estante-dropi-2024';
+const ALLOWED_ORIGIN = 'https://el-estante-cl.myshopify.com';
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
+    // SECRET_KEY viene de Cloudflare Dashboard → Settings → Variables
+    const SECRET_KEY = env.SECRET_KEY || '';
+
+    const origin = request.headers.get('Origin') || '';
+    const corsOrigin = origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : ALLOWED_ORIGIN;
 
     // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': corsOrigin,
           'Access-Control-Allow-Methods': 'POST, GET',
-          'Access-Control-Allow-Headers': '*'
+          'Access-Control-Allow-Headers': 'x-proxy-secret, x-dropi-token, x-dropi-method, x-dropi-auth-type, Content-Type'
         }
       });
     }
 
     // Verificar clave secreta
     const secret = request.headers.get('x-proxy-secret');
-    if (secret !== SECRET_KEY) {
+    if (!SECRET_KEY || secret !== SECRET_KEY) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
@@ -70,7 +72,7 @@ export default {
       status: dropiRes.status,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': corsOrigin
       }
     });
   }
