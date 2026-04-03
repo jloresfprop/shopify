@@ -54,7 +54,8 @@
   <div class="product-page__gallery">
     {%- assign images_json = '' -%}
     {%- for image in product.images -%}
-      {%- assign images_json = images_json | append: '"' | append: image | image_url: width: 800 | append: '"' -%}
+      {%- assign img_url = image | image_url: width: 800 -%}
+      {%- assign images_json = images_json | append: '"' | append: img_url | append: '"' -%}
       {%- unless forloop.last -%}{%- assign images_json = images_json | append: ',' -%}{%- endunless -%}
     {%- endfor -%}
 

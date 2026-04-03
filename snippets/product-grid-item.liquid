@@ -7,7 +7,8 @@
 
 {%- assign card_images = '' -%}
 {%- for img in product.images limit: 6 -%}
-  {%- assign card_images = card_images | append: img | image_url: width: 600 -%}
+  {%- assign img_url = img | image_url: width: 600 -%}
+  {%- assign card_images = card_images | append: img_url -%}
   {%- unless forloop.last -%}{%- assign card_images = card_images | append: '|' -%}{%- endunless -%}
 {%- endfor -%}
 
