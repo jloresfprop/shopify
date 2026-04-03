@@ -90,11 +90,11 @@
             {%- endunless -%}
             <p class="cart__item-price">{{ item.final_line_price | money }}</p>
             <div class="cart__item-qty">
-              <button type="button" onclick="updateQty('{{ item.key }}', {{ item.quantity | minus: 1 }})">−</button>
-              <input type="number" value="{{ item.quantity }}" min="1" id="qty-{{ item.key }}" onchange="updateQty('{{ item.key }}', this.value)">
-              <button type="button" onclick="updateQty('{{ item.key }}', {{ item.quantity | plus: 1 }})">+</button>
+              <button type="button" class="qty-btn" data-key="{{ item.key | escape }}" data-qty="{{ item.quantity | minus: 1 }}">−</button>
+              <input type="number" value="{{ item.quantity }}" min="1" class="qty-input" data-key="{{ item.key | escape }}">
+              <button type="button" class="qty-btn" data-key="{{ item.key | escape }}" data-qty="{{ item.quantity | plus: 1 }}">+</button>
             </div>
-            <a class="cart__remove" onclick="updateQty('{{ item.key }}', 0); return false;" href="#">Eliminar</a>
+            <a class="cart__remove" href="#" data-key="{{ item.key | escape }}" data-qty="0">Eliminar</a>
           </div>
 
           <div style="text-align:right">
@@ -129,9 +129,26 @@ function updateQty(key, qty) {
   fetch('/cart/change.js', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: key, quantity: parseInt(qty) })
+    body: JSON.stringify({ id: key, quantity: parseInt(qty, 10) })
   }).then(() => location.reload());
 }
+
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.qty-btn, .cart__remove');
+  if (!btn) return;
+  e.preventDefault();
+  const key = btn.dataset.key;
+  const qty = parseInt(btn.dataset.qty, 10);
+  if (key) updateQty(key, qty);
+});
+
+document.addEventListener('change', function(e) {
+  const input = e.target.closest('.qty-input');
+  if (!input) return;
+  const key = input.dataset.key;
+  const qty = parseInt(input.value, 10);
+  if (key && qty >= 0) updateQty(key, qty);
+});
 </script>
 
 {% schema %}

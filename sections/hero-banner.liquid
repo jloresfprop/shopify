@@ -98,7 +98,7 @@
       <span class="hero__eyebrow">{{ section.settings.eyebrow }}</span>
     {%- endif -%}
 
-    <h1 class="hero__title">{{ section.settings.title | replace: '*', '<em>' | replace: '#', '</em>' }}</h1>
+    <h1 class="hero__title">{{ section.settings.title | escape | replace: '*', '<em>' | replace: '#', '</em>' }}</h1>
 
     {%- if section.settings.subtitle != blank -%}
       <p class="hero__subtitle">{{ section.settings.subtitle }}</p>
