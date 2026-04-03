@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!img) return;
     let current = 0;
 
+    // Precargar todas las imágenes de la tarjeta
+    images.forEach(src => { const i = new Image(); i.src = src; });
+
     function goTo(idx) {
       current = (idx + images.length) % images.length;
       img.src = images[current];

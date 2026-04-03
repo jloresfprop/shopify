@@ -97,6 +97,9 @@
       const images  = JSON.parse(wrap?.dataset.images || '[]');
       let current   = 0;
 
+      // Precargar todas las imágenes para navegación instantánea
+      images.forEach(src => { const i = new Image(); i.src = src; });
+
       window.galleryGoTo = function(idx) {
         current = (idx + images.length) % images.length;
         mainImg.src = images[current];
