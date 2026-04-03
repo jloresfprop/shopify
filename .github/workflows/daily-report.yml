@@ -1,0 +1,40 @@
+name: Reporte Diario Telegram (10:30 AM Chile)
+
+on:
+  schedule:
+    - cron: '30 13 * * *'   # 13:30 UTC = 10:30 AM Chile (UTC-3)
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Crear .env
+        run: |
+          cat > .env << 'EOF'
+          SHOPIFY_STORE=${{ secrets.SHOPIFY_STORE }}
+          SHOPIFY_TOKEN=${{ secrets.SHOPIFY_TOKEN }}
+          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
+          EOF
+
+      - name: Crear credenciales Google
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > el-estante-cl.json
+
+      - name: Enviar reporte diario
+        run: node scripts/daily-report.js
