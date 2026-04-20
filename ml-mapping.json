@@ -7,7 +7,7 @@
   },
   "7511070507105": {
     "id": "MLC3793346706",
-    "price": 5466,
+    "price": 4303,
     "stock": 291,
     "syncedImageCount": 16
   },
@@ -37,7 +37,7 @@
   },
   "7515330773089": {
     "id": "MLC3807146552",
-    "price": 3710,
+    "price": 3128,
     "stock": 340,
     "syncedImageCount": 9
   },
@@ -61,7 +61,7 @@
   },
   "7515330936929": {
     "id": "MLC3815642584",
-    "price": 19989,
+    "price": 15931,
     "stock": 120,
     "syncedImageCount": 9
   },
@@ -79,7 +79,7 @@
   },
   "7515330838625": {
     "id": "MLC1906748767",
-    "price": 7791,
+    "price": 6617,
     "stock": 130,
     "syncedImageCount": 18
   },
@@ -145,7 +145,7 @@
   },
   "7518472929377": {
     "id": "MLC1910972397",
-    "price": 6628,
+    "price": 5466,
     "stock": 196,
     "syncedImageCount": 15
   },
@@ -157,7 +157,7 @@
   },
   "7518473584737": {
     "id": "MLC3827739376",
-    "price": 4884,
+    "price": 4291,
     "stock": 35,
     "syncedImageCount": 15
   },
@@ -169,7 +169,7 @@
   },
   "7518473420897": {
     "id": "MLC1910984223",
-    "price": 4303,
+    "price": 3710,
     "stock": 87,
     "syncedImageCount": 17
   },
@@ -181,7 +181,7 @@
   },
   "7518473650273": {
     "id": "MLC3827762846",
-    "price": 5466,
+    "price": 4303,
     "stock": 100,
     "syncedImageCount": 15
   },
@@ -193,13 +193,13 @@
   },
   "7518473715809": {
     "id": "MLC1910972495",
-    "price": 36861,
+    "price": 29873,
     "stock": 98,
     "syncedImageCount": 23
   },
   "7518473551969": {
     "id": "MLC3827739442",
-    "price": 1977,
+    "price": 3128,
     "stock": 133,
     "syncedImageCount": 18
   },
@@ -211,7 +211,7 @@
   },
   "7518473683041": {
     "id": "MLC1910972519",
-    "price": 29873,
+    "price": 24059,
     "stock": 50,
     "syncedImageCount": 9
   },
@@ -223,7 +223,7 @@
   },
   "7518473093217": {
     "id": "MLC1911031973",
-    "price": 7210,
+    "price": 6035,
     "stock": 300,
     "syncedImageCount": 21
   },
@@ -235,13 +235,13 @@
   },
   "7518473453665": {
     "id": "MLC3827762952",
-    "price": 7210,
+    "price": 6035,
     "stock": 5779,
     "syncedImageCount": 15
   },
   "7518473289825": {
     "id": "MLC3827775972",
-    "price": 3721,
+    "price": 3140,
     "stock": 198,
     "syncedImageCount": 12
   }
