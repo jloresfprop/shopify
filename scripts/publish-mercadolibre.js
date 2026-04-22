@@ -82,7 +82,7 @@ async function publishProduct(product, token) {
   if (!categoryId) throw new Error(`No se encontró categoría para: ${title}`);
 
   const brand = product.vendor || 'Genérico';
-  const partNumber = variant.sku || String(product.id);
+  const partNumber = variant.sku || '';
 
   const body = {
     title,
@@ -97,8 +97,8 @@ async function publishProduct(product, token) {
     tags: ['immediate_payment'],
     shipping: { mode: 'me2', local_pick_up: false, free_shipping: false },
     attributes: [
-      { id: 'BRAND',       value_name: brand },
-      { id: 'PART_NUMBER', value_name: partNumber }
+      { id: 'BRAND', value_name: brand },
+      ...(partNumber ? [{ id: 'PART_NUMBER', value_name: partNumber }] : [])
     ]
   };
 

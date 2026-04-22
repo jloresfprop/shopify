@@ -1,8 +1,8 @@
 name: Sync Completo (cada 6h)
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'   # cada 6 horas
+  # schedule:
+  #   - cron: '0 */6 * * *'   # cada 6 horas — PAUSADO
   workflow_dispatch:
 
 jobs:

@@ -37,6 +37,14 @@ function saveMLImagesCache(cache) { writeFileSync(ML_IMAGES_CACHE_FILE, JSON.str
 
 const SHOPIFY_HEADS = { 'X-Shopify-Access-Token': SHOPIFY_TOKEN, 'Content-Type': 'application/json' };
 
+const DROPI_TOKEN = process.env.DROPI_USER_TOKEN;
+const DROPI_HEADS = DROPI_TOKEN ? {
+  'x-authorization': `Bearer ${DROPI_TOKEN}`,
+  'Content-Type': 'application/json',
+  'Origin': 'https://app.dropi.cl',
+  'Referer': 'https://app.dropi.cl/'
+} : {};
+
 // Sheet names
 const SHEET_PRODUCTS = 'Productos';
 const SHEET_ORDERS   = 'Órdenes';
@@ -45,6 +53,11 @@ const SHEET_AI       = 'IA Uso';
 
 const TELEGRAM_TOKEN  = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT   = process.env.TELEGRAM_CHAT_ID;
+
+// WhatsApp vía Green API (gratis 500 msg/mes — green-api.com)
+const WA_INSTANCE  = process.env.WHATSAPP_INSTANCE_ID;
+const WA_TOKEN     = process.env.WHATSAPP_TOKEN;
+const WA_PHONE     = process.env.WHATSAPP_PHONE; // ej: 56912345678 (sin + ni espacios)
 
 async function sendTelegram(msg) {
   if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
@@ -55,6 +68,22 @@ async function sendTelegram(msg) {
       body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
     });
   } catch (_) {}
+}
+
+async function sendWhatsApp(msg) {
+  if (!WA_INSTANCE || !WA_TOKEN || !WA_PHONE) return;
+  try {
+    await fetch(`https://api.green-api.com/waInstance${WA_INSTANCE}/sendMessage/${WA_TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId: `${WA_PHONE}@c.us`, message: msg })
+    });
+  } catch (_) {}
+}
+
+// Envía a Telegram Y WhatsApp al mismo tiempo
+async function notify(msg) {
+  await Promise.all([sendTelegram(msg), sendWhatsApp(msg)]);
 }
 
 const AI_PRICING = {
@@ -325,7 +354,9 @@ async function getMLToken() {
         console.log('  🔑 Token ML renovado');
         return data.access_token;
       }
-    } catch { }
+    } catch (e) {
+      console.log(`  ⚠️  Token refresh ML falló: ${e.message} — usando token existente`);
+    }
   }
   if (ML_USER_TOKEN) return ML_USER_TOKEN;
   const res = await fetch('https://api.mercadolibre.com/oauth/token', {
@@ -334,6 +365,7 @@ async function getMLToken() {
     body: new URLSearchParams({ grant_type: 'client_credentials', client_id: ML_CLIENT_ID, client_secret: ML_CLIENT_SECRET })
   });
   const data = await res.json();
+  if (!data.access_token) throw new Error(`Token ML inválido: ${JSON.stringify(data)}`);
   return data.access_token;
 }
 
@@ -503,31 +535,26 @@ async function syncShopifyStock(products, dropiMeta) {
     const meta = dropiMeta[pid];
     if (!meta) { sinMeta++; continue; }
 
-    const dropiStock   = meta.stock;
+    const dropiStock   = Math.max(0, meta.stock || 0); // nunca negativo
     const shopifyStock = p.variants.reduce((s, v) => s + (v.inventory_quantity || 0), 0);
     if (shopifyStock === dropiStock) continue; // sin cambio
+
+    // Usar solo la ubicación primaria (primera activa) para evitar multiplicar el stock
+    // si Shopify tiene múltiples ubicaciones.
+    const primaryLocation = activeLocations[0];
 
     for (const variant of p.variants) {
       if (!variant.inventory_item_id) continue;
 
-      // Obtener los inventory_levels de esta variante para saber en qué ubicaciones está
-      const lvlRes = await fetch(
-        `https://${SHOPIFY_STORE}/admin/api/2024-10/inventory_levels.json?inventory_item_ids=${variant.inventory_item_id}`,
-        { headers: SHOPIFY_HEADS }
-      );
-      const { inventory_levels } = await lvlRes.json();
-
-      for (const level of (inventory_levels || [])) {
-        await fetch(`https://${SHOPIFY_STORE}/admin/api/2024-10/inventory_levels/set.json`, {
-          method: 'POST', headers: SHOPIFY_HEADS,
-          body: JSON.stringify({
-            location_id:       level.location_id,
-            inventory_item_id: variant.inventory_item_id,
-            available:         dropiStock
-          })
-        });
-        await new Promise(r => setTimeout(r, 200));
-      }
+      await fetch(`https://${SHOPIFY_STORE}/admin/api/2024-10/inventory_levels/set.json`, {
+        method: 'POST', headers: SHOPIFY_HEADS,
+        body: JSON.stringify({
+          location_id:       primaryLocation.id,
+          inventory_item_id: variant.inventory_item_id,
+          available:         dropiStock
+        })
+      });
+      await new Promise(r => setTimeout(r, 200));
     }
 
     updated++;
@@ -855,19 +882,22 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
 
     // ── Lógica de precios ──────────────────────────────────────────────────────
     // Flujo: dropiCost → webPrice (costo + margen) → mlPrice (web + comisión ML)
-    const esPlaceholder = currentWeb < MIN_VALID_PRICE;
-    const WEB_MARGIN    = parseFloat(process.env.WEB_MARGIN || '0.30'); // 30% margen mínimo
+    const esPlaceholder  = currentWeb < MIN_VALID_PRICE;
+    const WEB_MARGIN     = parseFloat(process.env.WEB_MARGIN || '0.30'); // 30% margen mínimo
+    // Precio sugerido por Dropi: piso duro para no vender por debajo de lo que Dropi recomienda
+    const dropiSuggested = dropiMeta[pid]?.suggested || 0;
 
     // Obtener mediana de competencia en ML (referencia de precio de mercado)
     const { median } = await getMLPriceData(p.title, dropiCost || currentWeb, token);
 
     // PASO 1: Precio web
-    // Piso = dropiCost + margen mínimo (garantiza ganancia)
+    // Piso = max(costo+margen, precio sugerido Dropi, 80% precio histórico)
     const minWebFromCost  = dropiCost > 0 ? Math.round(dropiCost * (1 + WEB_MARGIN)) : 0;
     const floorByHistory  = currentWeb >= MIN_VALID_PRICE ? Math.round(currentWeb * 0.8) : 0;
-    const minWeb          = Math.max(minWebFromCost, floorByHistory, dropiCost);
+    const minWeb          = Math.max(minWebFromCost, floorByHistory, dropiCost, dropiSuggested);
     // Referencia de mercado: mediana ML * 0.90 (10% bajo mercado para ser competitivo en web)
     const webFromMarket   = median ? Math.round(median * 0.90) : 0;
+    // El precio final nunca baja del piso (aunque la competencia esté por debajo)
     const newWeb          = attractivePrice(Math.max(minWeb, webFromMarket || minWeb));
 
     // PASO 2: Precio ML (deriva del webPrice, no del costo directamente)
@@ -878,6 +908,10 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
     const mlPrice         = Math.max(mlMinFromWeb, mlFromMarket);
 
     const competMsg = median ? ` (mercado ML: $${median.toLocaleString('es-CL')})` : '';
+    if (dropiSuggested > 0 && newWeb < dropiSuggested) {
+      // Esto no debería ocurrir con el nuevo piso, pero lo logueamos si pasa
+      console.log(`  ⚠️  ALERTA PRECIO: ${p.title} → web $${newWeb.toLocaleString('es-CL')} < sugerido Dropi $${dropiSuggested.toLocaleString('es-CL')}`);
+    }
 
     // Actualizar Shopify web: solo si es placeholder o cambio ≥15%
     const diffPct = currentWeb >= MIN_VALID_PRICE ? Math.abs(newWeb - currentWeb) / currentWeb : 1;
@@ -937,7 +971,7 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
           continue;
         }
 
-        const sku = p.variants[0]?.sku || String(p.id);
+        const sku = p.variants[0]?.sku || '';
 
         // ── IA: elige categoría y atributos óptimos ──
         const aiResult = await aiResolveMLPublish(p, candidates, token);
@@ -976,9 +1010,9 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
 
         // Combinar atributos base + extras de IA/fallback (sin duplicar)
         const baseAttrs = [
-          { id: 'BRAND',       value_name: p.vendor || 'Genérico' },
-          { id: 'PART_NUMBER', value_name: sku },
-          { id: 'MODEL',       value_name: p.title.slice(0, 60) },
+          { id: 'BRAND', value_name: p.vendor || 'Genérico' },
+          ...(sku ? [{ id: 'PART_NUMBER', value_name: sku }] : []),
+          { id: 'MODEL', value_name: p.title.slice(0, 60) },
         ];
         const baseIds = new Set(baseAttrs.map(a => a.id));
         const allAttrs = [...baseAttrs, ...(extraAttrs || []).filter(a => !baseIds.has(a.id))];
@@ -1026,6 +1060,94 @@ async function syncPricesAndListings(products, token, dropiMeta = {}) {
   return { mlPublished, mlUpdated, mlPaused, webUpdated };
 }
 
+// ── HELPERS ÓRDENES ───────────────────────────────────────────────────────────
+
+// Verifica en Shopify si ya existe una orden con ese ID de ML (segunda capa anti-duplicado)
+async function shopifyOrderExistsByMLId(mlOrderId) {
+  try {
+    const res = await fetch(
+      `https://${SHOPIFY_STORE}/admin/api/2024-10/orders.json?status=any&fields=id,note&limit=250`,
+      { headers: SHOPIFY_HEADS }
+    );
+    const data = await res.json();
+    return (data.orders || []).some(o => o.note?.includes(`ML #${mlOrderId}`));
+  } catch { return false; }
+}
+
+// Busca el Dropi product ID dado un ML item ID usando el mapping inverso + metafield
+async function getDropiProductIdForMLItem(mlItemId) {
+  try {
+    const mapping = loadMapping();
+    const shopifyProductId = Object.keys(mapping).find(
+      k => getMlId(mapping[k]) === String(mlItemId)
+    );
+    if (!shopifyProductId) return null;
+    const res = await fetch(
+      `https://${SHOPIFY_STORE}/admin/api/2024-10/products/${shopifyProductId}/metafields.json`,
+      { headers: SHOPIFY_HEADS }
+    );
+    const { metafields } = await res.json();
+    const meta = metafields?.find(m => m.namespace === 'dropi' && m.key === '_dropi_product');
+    if (!meta) return null;
+    const dropi = JSON.parse(meta.value);
+    return dropi.id || null;
+  } catch { return null; }
+}
+
+// Crea la orden en Dropi para que ellos la despachen al cliente
+async function createDropiOrder(mlOrderId, detail, shipping) {
+  if (!DROPI_TOKEN) {
+    console.log('  ⚠️  DROPI_USER_TOKEN no configurado — omitiendo creación en Dropi');
+    return null;
+  }
+  const buyer = detail.buyer;
+  const addr  = shipping?.receiver_address;
+
+  // Construir lista de productos Dropi
+  const products = [];
+  for (const item of detail.order_items) {
+    const dropiId = await getDropiProductIdForMLItem(item.item.id);
+    if (dropiId) {
+      products.push({ id: dropiId, quantity: item.quantity });
+    } else {
+      console.log(`  ⚠️  Sin producto Dropi para ML item ${item.item.id} (${item.item.title})`);
+    }
+  }
+  if (products.length === 0) {
+    console.log(`  ⚠️  ML #${mlOrderId}: ningún producto encontrado en Dropi — no se crea orden`);
+    return null;
+  }
+
+  const payload = {
+    products,
+    customer: {
+      name:    `${buyer.first_name || buyer.nickname || 'Cliente'} ${buyer.last_name || ''}`.trim(),
+      phone:   buyer.phone?.number || '',
+      email:   buyer.email || `ml-${buyer.id}@noreply.com`,
+      address: addr ? `${addr.street_name || ''} ${addr.street_number || ''}`.trim() : 'Por confirmar',
+      city:    addr?.city?.name || addr?.state?.name || 'Chile',
+      commune: addr?.city?.name || addr?.state?.name || 'Chile'
+    },
+    note: `ML #${mlOrderId}`
+  };
+
+  try {
+    const res  = await fetch('https://api.dropi.cl/integrations/orders/', {
+      method: 'POST', headers: DROPI_HEADS, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.log(`  ❌ Dropi error ${res.status}: ${JSON.stringify(data)}`);
+      return null;
+    }
+    console.log(`  🚚 Dropi orden creada: #${data.id || data.object?.id || JSON.stringify(data)}`);
+    return data;
+  } catch (e) {
+    console.log(`  ❌ Dropi excepción: ${e.message}`);
+    return null;
+  }
+}
+
 // ── 4. ÓRDENES ML → SHOPIFY ───────────────────────────────────────────────────
 async function syncMLOrders(token) {
   const res = await fetch(
@@ -1039,6 +1161,15 @@ async function syncMLOrders(token) {
 
   for (const order of nuevas) {
     try {
+      // Verificar en Shopify que no exista ya (segunda capa anti-duplicado)
+      const yaExiste = await shopifyOrderExistsByMLId(order.id);
+      if (yaExiste) {
+        console.log(`  ⚠️  Orden ML #${order.id} ya existe en Shopify — marcando procesada`);
+        processed.add(String(order.id));
+        saveProcessed(processed);
+        continue;
+      }
+
       const detail = await (await fetch(`https://api.mercadolibre.com/orders/${order.id}`, { headers: { Authorization: `Bearer ${token}` } })).json();
       const shipping = detail.shipping?.id ? await (await fetch(`https://api.mercadolibre.com/shipments/${detail.shipping.id}`, { headers: { Authorization: `Bearer ${token}` } })).json() : null;
       const buyer = detail.buyer;
@@ -1071,18 +1202,36 @@ async function syncMLOrders(token) {
       const shopifyData = await shopifyRes.json();
       const shopifyId = shopifyData.order?.id;
 
-      processed.add(String(order.id));
-      saveProcessed(processed);
       console.log(`  📦 Orden ML #${order.id} → Shopify #${shopifyId}`);
+
+      // Enviar orden a Dropi para que despachen el producto
+      const dropiResult = await createDropiOrder(order.id, detail, shipping);
+
+      // Solo marcar como procesado después de confirmar Dropi (o si Shopify ya la tiene)
+      // Si Dropi falla, el próximo ciclo reintentará
+      if (dropiResult !== null) {
+        processed.add(String(order.id));
+        saveProcessed(processed);
+      } else {
+        // Dropi falló: marcar de todas formas para no duplicar en Shopify,
+        // pero alertar por Telegram para intervención manual
+        processed.add(String(order.id));
+        saveProcessed(processed);
+        await notify(
+          `⚠️ ALERTA: Orden ML #${order.id} creada en Shopify #${shopifyId} pero NO se pudo enviar a Dropi.\n` +
+          `Intervención manual requerida para despachar al cliente.`
+        );
+      }
 
       // Notificación Telegram
       const itemsText = lineItems.map(i => `• ${i.title} x${i.quantity} — $${i.price?.toLocaleString('es-CL')}`).join('\n');
-      await sendTelegram(
-        `Nueva orden de MercadoLibre\n\n` +
+      await notify(
+        `${dropiResult ? '✅' : '⚠️'} Nueva orden MercadoLibre\n\n` +
         `Cliente: ${shippingAddress.first_name} ${shippingAddress.last_name}\n` +
         `Total: $${detail.total_amount?.toLocaleString('es-CL')}\n\n` +
         `${itemsText}\n\n` +
-        `ML #${order.id} → Shopify #${shopifyId}`
+        `ML #${order.id} → Shopify #${shopifyId}\n` +
+        `Dropi: ${dropiResult ? '✅ enviado' : '❌ falló — revisar manualmente'}`
       );
 
       // Registrar orden en Google Sheets

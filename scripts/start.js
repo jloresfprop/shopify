@@ -7,7 +7,7 @@ const __dir         = dirname(fileURLToPath(import.meta.url));
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutos
 
 function loadEnv() {
-  const env = readFileSync(resolve(__dir, '../.env'), 'utf8');
+  const env = readFileSync(resolvePath(__dir, '../.env'), 'utf8');
   for (const line of env.split('\n')) {
     const [k, ...v] = line.split('=');
     if (k?.trim() && v.length) process.env[k.trim()] = v.join('=').trim();
