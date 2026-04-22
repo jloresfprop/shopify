@@ -67,13 +67,13 @@
   },
   "7515331100769": {
     "id": "MLC3815338766",
-    "price": 13594,
+    "price": 11268,
     "stock": 98,
     "syncedImageCount": 12
   },
   "7515330871393": {
     "id": "MLC3815617054",
-    "price": 5466,
+    "price": 8361,
     "stock": 100,
     "syncedImageCount": 17
   },
@@ -163,7 +163,7 @@
   },
   "7518473257057": {
     "id": "MLC3827690010",
-    "price": 6617,
+    "price": 7780,
     "stock": 500,
     "syncedImageCount": 14
   },
@@ -181,7 +181,7 @@
   },
   "7518473650273": {
     "id": "MLC3827762846",
-    "price": 3710,
+    "price": 10105,
     "stock": 100,
     "syncedImageCount": 15
   },
@@ -199,7 +199,7 @@
   },
   "7518473551969": {
     "id": "MLC3827739442",
-    "price": 2559,
+    "price": 3128,
     "stock": 133,
     "syncedImageCount": 18
   },
@@ -211,7 +211,7 @@
   },
   "7518473683041": {
     "id": "MLC1910972519",
-    "price": 36861,
+    "price": 29873,
     "stock": 50,
     "syncedImageCount": 9
   },
@@ -229,7 +229,7 @@
   },
   "7518473125985": {
     "id": "MLC3827789068",
-    "price": 8942,
+    "price": 7210,
     "stock": 300,
     "syncedImageCount": 18
   },
@@ -241,7 +241,7 @@
   },
   "7518473289825": {
     "id": "MLC3827775972",
-    "price": 3721,
+    "price": 3140,
     "stock": 198,
     "syncedImageCount": 12
   }
